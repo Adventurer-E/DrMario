@@ -29,12 +29,27 @@ ADDR_KBRD:
 ##############################################################################
 # Mutable Data
 ##############################################################################
-
+LEFT:
+    .word 0x10008074
+RIGHT:
+    .word 0x10008088
+MIDDLE:
+    .word 0x1000807c
+TOP:
+    .word 0x1000800c
 ##############################################################################
 # Code
 ##############################################################################
 	.text
 	.globl main
+
+    # Set up the walls.
+    
+    li $t1, 0x808080  # Store gray in $t1.
+    lw $t0, LEFT
+    # Start coloring the left side of the bottle neck.
+    sw $t1, 0($t0)  # Color LEFT gray.
+    
 
     # Run the game.
 main:
@@ -49,4 +64,4 @@ game_loop:
 	# 4. Sleep
 
     # 5. Go back to Step 1
-    j game_loop
+    # j game_loop
