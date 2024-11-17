@@ -209,9 +209,17 @@ delete_capsule:
     # $t1 = color1
     # $t2 = color2
     # $a3 = direction (1 for horizontal and 2 for vertical)
+
+    addi $sp, $sp, -4      # Allocate space on the stack
+    sw $ra, 0($sp)         # Save $ra onto the stack
+
     lw $t1, BLACK
     lw $t2, BLACK
     jal make_capsule
+
+    lw $ra, 0($sp)         # Restore $ra from the stack
+    addi $sp, $sp, 4       # Deallocate stack space
+
     jr $ra
 
 
