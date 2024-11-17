@@ -25,6 +25,8 @@ ADDR_DSPL:
 # The address of the keyboard. Don't forget to connect it!
 ADDR_KBRD:
     .word 0xffff0000
+KEY_VAL:
+    .word 0xffff0004
 
 ##############################################################################
 # Mutable Data
@@ -129,6 +131,18 @@ draw_horizontal_line:
     draw_horizontal_line_end:
     jr $ra
 
+    ##### First capsule
+    lw $t0, MIDDLE
+    addi $a3, $zero, 1
+    jal create_capsule
+    
+    lw $t0, BOTTOMLEFT
+    addi $a3, $zero, 1
+    jal create_capsule
+
+    li $v0, 10 # exit the program gracefully
+    syscall
+
 determine_color_1:
     # Map number 0,1,2 to the three colors.
     # $t1 = number 0,1,2
@@ -229,11 +243,41 @@ main:
 
 game_loop:
     # 1a. Check if key has been pressed
+    lw $t3, ADDR_KBRD # t3 is the base address for keyboard
+    lw $t4, 0($t3) # load value at ADDR_KBRD to t4
+    beq $t4, 0, sleep
     # 1b. Check which key has been pressed
+    lw $t4, 1($t3) # load keyboard value to t4
+    beq $t4, 0x77, W
+    beq $t4, 0x61, A
+    beq $t4, 0x73, S
+    beq $t4, 0x64, D
+    beq $t4, 0x71, quit
+    W:
+        beq $a3, 1, hor_to_ver
+        beq $a3, 2, ver_to_hor
+        hor_to_ver: # horizontal to vertical
+        add $t5, $t0, 256 # check if the block under the head is colored
+        bne $t5, 0, W_end
+        jal delete_capsule
+        addi $a3, $zero, 2
+        jal make_capsule
+        W_end:
+        jr $ra
+        
+        
+    A:
+    S:
+    D:
+
     # 2a. Check for collisions
 	# 2b. Update locations (capsules)
 	# 3. Draw the screen
 	# 4. Sleep
-
+    sleep:
     # 5. Go back to Step 1
     # j game_loop
+
+quit:
+    li $v0, 10 # exit the program gracefully
+    syscall
