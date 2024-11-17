@@ -35,8 +35,14 @@ RIGHT: # (34,1)
     .word 0x10008088
 MIDDLE:
     .word 0x1000807c
-TOP:
-    .word 0x1000800c
+TOPLEFT:   # (1,3), 0x10008000 + 2 * 64 * 4
+    .word 0x10008200
+TOPRIGHT:  # (64,3), 0x10008000 + (2 * 64 + 63) * 4
+    .word 0x100082fc
+MIDDLERIGHT: # (34,3)
+    .word 0x1000808f
+BOTTOMLEFT: # (64,1), 0x10008000 + 63 * (64 * 4)
+    .word 0x1000bf00
 ##############################################################################
 # Code
 ##############################################################################
@@ -56,7 +62,12 @@ TOP:
     add $t0, $zero, $zero
     jal draw_vertical_line
     # Now draw the left vertical body
-    lw $a0, TOP
+    lw $a0, TOPLEFT
+    addi $a1, $zero, 62
+    add $t0, $zero, $zero
+    jal draw_vertical_line
+    # Now draw the right vertical body
+    lw $a0, TOPRIGHT
     addi $a1, $zero, 62
     add $t0, $zero, $zero
     jal draw_vertical_line
