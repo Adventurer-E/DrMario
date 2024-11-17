@@ -29,9 +29,9 @@ ADDR_KBRD:
 ##############################################################################
 # Mutable Data
 ##############################################################################
-LEFT:
+LEFT:  # (30,1), 0x10008000 + 29 * 4
     .word 0x10008074
-RIGHT:
+RIGHT: # (34,1)
     .word 0x10008088
 MIDDLE:
     .word 0x1000807c
@@ -46,11 +46,41 @@ TOP:
     # Set up the walls.
     
     li $t1, 0x808080  # Store gray in $t1.
-    lw $t0, LEFT
-    # Start coloring the left side of the bottle neck.
-    sw $t1, 0($t0)  # Color LEFT gray.
+    lw $a0, LEFT # Set t0 the first address to be painted (left neck)
+    addi $a1, $zero, 3 # a1=3, the length of the left neck
+    add $t0, $zero, $zero # Length counter. Currently zero.
+    jal draw_vertical_line
+    # Now draw the right neck
+    lw $a0, RIGHT
+    addi $a1, $zero, 3
+    add $t0, $zero, $zero
+    jal draw_vertical_line
+    # Now draw the left vertical body
+    lw $a0, TOP
+    addi $a1, $zero, 62
+    add $t0, $zero, $zero
+    jal draw_vertical_line
     
-
+    
+    
+    
+    li $v0, 10 # exit the program gracefully
+    syscall
+    
+draw_vertical_line:
+    #  $a0 = starting address
+    #  $a1 = length of the line
+    sw $t1, 0($a0) # Color a0 gray
+    addi $t0, $t0, 1 # Increment length counter by 1
+    addi $a0, $a0, 256 # Go to the next row. 256 = 64 * 4
+    beq $t0, $a1, draw_vertical_line_end # if length numbers painted, break out
+    j draw_vertical_line
+    draw_vertical_line_end:
+    jr $ra
+    
+    
+    
+    
     # Run the game.
 main:
     # Initialize the game
