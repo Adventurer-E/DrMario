@@ -43,13 +43,19 @@ MIDDLERIGHT: # (34,3)
     .word 0x1000808f
 BOTTOMLEFT: # (64,1), 0x10008000 + 63 * (64 * 4)
     .word 0x1000bf00
+RED:
+    .word 0xff0000
+BLUE:
+    .word 0x0000ff
+YELLOW:
+    .word 0xffff00
 ##############################################################################
 # Code
 ##############################################################################
 	.text
 	.globl main
 
-    # Set up the walls.
+    ##### Set up the walls.
 
     li $t1, 0x808080  # Store gray in $t1.
     lw $a0, LEFT # Set t0 the first address to be painted (left neck)
@@ -87,6 +93,11 @@ BOTTOMLEFT: # (64,1), 0x10008000 + 63 * (64 * 4)
     add $t0, $zero, $zero
     jal draw_horizontal_line
 
+    ##### First capsule
+    lw $t0, MIDDLE
+    addi $a3, $zero, 1
+    jal create_capsule
+
 
     li $v0, 10 # exit the program gracefully
     syscall
@@ -111,6 +122,73 @@ draw_horizontal_line:
     beq $t0, $a1, draw_horizontal_line_end # if length numbers painted, break out
     j draw_horizontal_line
     draw_horizontal_line_end:
+    jr $ra
+
+determine_color_1:
+    # Map number 0,1,2 to the three colors.
+    # $t1 = number 0,1,2
+    beq $t1, 0, is_red_1
+    beq $t1, 1, is_blue_1
+    beq $t1, 2, is_yellow_1
+    is_red_1:
+        lw $t1, RED
+        jr $ra
+    is_blue_1:
+        lw $t1, BLUE
+        jr $ra
+    is_yellow_1:
+        lw $t1, YELLOW
+        jr $ra
+
+determine_color_2:
+    # Map number 0,1,2 to the three colors.
+    # $t2 = number 0,1,2
+    beq $t2, 0, is_red_2
+    beq $t2, 1, is_blue_2
+    beq $t2, 2, is_yellow_2
+    is_red_2:
+        lw $t2, RED
+        jr $ra
+    is_blue_2:
+        lw $t2, BLUE
+        jr $ra
+    is_yellow_2:
+        lw $t2, YELLOW
+        jr $ra
+
+make_capsule:
+    # $t0 = head address of the capusle
+    # $t1 = color1
+    # $t2 = color2
+    # $a3 = direction (1 for horizontal and 2 for vertical)
+    sw $t1, 0($t0) # Color the head
+    beq $a3, 1, horizontal_pixel # Check direction
+    beq $a3, 2, vertical_pixel
+    horizontal_pixel:
+        sw $t2, 4($t0)
+        jr $ra
+    vertical_pixel:
+        sw $t2, 256($t0)
+        jr $ra
+
+create_capsule:
+    # $t0 = head address of the capusle
+    # $a3 = direction (1 for horizontal and 2 for vertical)
+    li $v0, 42 # For randomness
+    li $a0, 0 # required random number generator
+    li $a1, 3 # maximum number for random call
+    syscall # the color is stored in a0
+    add $t1, $zero, $a0 # store random number (0,1,2) in t1
+    jal determine_color_1 # color1 is stored in t1
+    
+    li $v0, 42
+    li $a0, 0
+    li $a1, 3
+    syscall
+    add $t2, $zero, $a0
+    jal determine_color_2 # color2 is stored in t2
+    
+    jal make_capsule
     jr $ra
 
     # Run the game.
