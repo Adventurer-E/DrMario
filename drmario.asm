@@ -60,6 +60,10 @@ TOP:
     addi $a1, $zero, 62
     add $t0, $zero, $zero
     jal draw_vertical_line
+    
+    
+    
+    
     li $v0, 10 # exit the program gracefully
     syscall
     
@@ -68,7 +72,7 @@ draw_vertical_line:
     #  $a1 = length of the line
     sw $t1, 0($a0) # Color a0 gray
     addi $t0, $t0, 1 # Increment length counter by 1
-    addi $a0, $a0, 256 # Go to the next row
+    addi $a0, $a0, 256 # Go to the next row. 256 = 64 * 4
     beq $t0, $a1, draw_vertical_line_end # if length numbers painted, break out
     j draw_vertical_line
     draw_vertical_line_end:
