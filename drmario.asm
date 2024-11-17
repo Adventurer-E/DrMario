@@ -4,7 +4,7 @@
 # Student 1: Eric Lu, 1010393487
 # Student 2: Ayusha Thapa, 1009861972
 #
-# We assert that the code submitted here is entirely our own 
+# We assert that the code submitted here is entirely our own
 # creation, and will indicate otherwise when it is not.
 #
 ######################## Bitmap Display Configuration ########################
@@ -50,7 +50,7 @@ BOTTOMLEFT: # (64,1), 0x10008000 + 63 * (64 * 4)
 	.globl main
 
     # Set up the walls.
-    
+
     li $t1, 0x808080  # Store gray in $t1.
     lw $a0, LEFT # Set t0 the first address to be painted (left neck)
     addi $a1, $zero, 3 # a1=3, the length of the left neck
@@ -71,13 +71,26 @@ BOTTOMLEFT: # (64,1), 0x10008000 + 63 * (64 * 4)
     addi $a1, $zero, 62
     add $t0, $zero, $zero
     jal draw_vertical_line
-    
-    
-    
-    
+
+    lw $a0, TOPLEFT
+    addi $a1, $zero, 30
+    add $t0, $zero, $zero
+    jal draw_horizontal_line
+
+    addi $a0, $a0, 20
+    addi $a1, $zero, 30
+    add $t0, $zero, $zero
+    jal draw_horizontal_line
+
+    lw $a0, BOTTOMLEFT
+    addi $a1, $zero, 63
+    add $t0, $zero, $zero
+    jal draw_horizontal_line
+
+
     li $v0, 10 # exit the program gracefully
     syscall
-    
+
 draw_vertical_line:
     #  $a0 = starting address
     #  $a1 = length of the line
@@ -88,10 +101,18 @@ draw_vertical_line:
     j draw_vertical_line
     draw_vertical_line_end:
     jr $ra
-    
-    
-    
-    
+
+draw_horizontal_line:
+    #  $a0 = starting address
+    #  $a1 = length of the line
+    sw $t1, 0($a0) # Color a0 gray
+    addi $t0, $t0, 1 # Increment length counter by 1
+    addi $a0, $a0, 4 # Go to the next unit
+    beq $t0, $a1, draw_horizontal_line_end # if length numbers painted, break out
+    j draw_horizontal_line
+    draw_horizontal_line_end:
+    jr $ra
+
     # Run the game.
 main:
     # Initialize the game
