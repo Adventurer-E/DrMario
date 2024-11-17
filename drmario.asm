@@ -103,8 +103,8 @@ BLACK:
     jal create_capsule
 
     #### Delete capsule
-    lw $t0, MIDDLE
-    jal delete_capsule
+    # lw $t0, MIDDLE
+    # jal delete_capsule
 
     li $v0, 10 # exit the program gracefully
     syscall
@@ -254,6 +254,8 @@ game_loop:
     beq $t4, 0x64, D
     beq $t4, 0x71, quit
     W:
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
         beq $a3, 1, hor_to_ver
         beq $a3, 2, ver_to_hor
         hor_to_ver: # horizontal to vertical
@@ -263,7 +265,10 @@ game_loop:
         addi $a3, $zero, 2
         jal make_capsule
         W_end:
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
         jr $ra
+        
         
         
     A:
