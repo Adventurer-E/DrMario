@@ -49,6 +49,8 @@ BLUE:
     .word 0x0000ff
 YELLOW:
     .word 0xffff00
+BLACK:
+    .word 0x000000
 ##############################################################################
 # Code
 ##############################################################################
@@ -98,6 +100,9 @@ YELLOW:
     addi $a3, $zero, 1
     jal create_capsule
 
+    #### Delete capsule
+    lw $t0, MIDDLE
+    jal delete_capsule
 
     li $v0, 10 # exit the program gracefully
     syscall
@@ -156,12 +161,40 @@ determine_color_2:
         lw $t2, YELLOW
         jr $ra
 
+create_capsule:
+    # $t0 = head address of the capusle
+    # $a3 = direction (1 for horizontal and 2 for vertical)
+    addi $sp, $sp, -4      # Allocate space on the stack
+    sw $ra, 0($sp)         # Save $ra onto the stack
+
+    li $v0, 42 # For randomness
+    li $a0, 0 # required random number generator
+    li $a1, 3 # maximum number for random call
+    syscall # the color is stored in a0
+    add $t1, $zero, $a0 # store random number (0,1,2) in t1
+    jal determine_color_1 # color1 is stored in t1
+
+    li $v0, 42
+    li $a0, 0
+    li $a1, 3
+    syscall
+    add $t2, $zero, $a0
+    jal determine_color_2 # color2 is stored in t2
+
+    jal make_capsule
+
+    lw $ra, 0($sp)         # Restore $ra from the stack
+    addi $sp, $sp, 4       # Deallocate stack space
+
+    jr $ra
+
 make_capsule:
     # $t0 = head address of the capusle
     # $t1 = color1
     # $t2 = color2
     # $a3 = direction (1 for horizontal and 2 for vertical)
     sw $t1, 0($t0) # Color the head
+
     beq $a3, 1, horizontal_pixel # Check direction
     beq $a3, 2, vertical_pixel
     horizontal_pixel:
@@ -171,25 +204,16 @@ make_capsule:
         sw $t2, 256($t0)
         jr $ra
 
-create_capsule:
+delete_capsule:
     # $t0 = head address of the capusle
+    # $t1 = color1
+    # $t2 = color2
     # $a3 = direction (1 for horizontal and 2 for vertical)
-    li $v0, 42 # For randomness
-    li $a0, 0 # required random number generator
-    li $a1, 3 # maximum number for random call
-    syscall # the color is stored in a0
-    add $t1, $zero, $a0 # store random number (0,1,2) in t1
-    jal determine_color_1 # color1 is stored in t1
-    
-    li $v0, 42
-    li $a0, 0
-    li $a1, 3
-    syscall
-    add $t2, $zero, $a0
-    jal determine_color_2 # color2 is stored in t2
-    
+    lw $t1, BLACK
+    lw $t2, BLACK
     jal make_capsule
     jr $ra
+
 
     # Run the game.
 main:
