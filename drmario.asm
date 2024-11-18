@@ -253,21 +253,49 @@ game_loop:
     beq $t4, 0x73, S
     beq $t4, 0x64, D
     beq $t4, 0x71, quit
-    W:
-    addi $sp, $sp, -4
-    sw $ra, 0($sp)
-        beq $a3, 1, hor_to_ver
-        beq $a3, 2, ver_to_hor
-        hor_to_ver: # horizontal to vertical
-        add $t5, $t0, 256 # check if the block under the head is colored
-        bne $t5, 0, W_end
-        jal delete_capsule
-        addi $a3, $zero, 2
-        jal make_capsule
-        W_end:
-        lw $ra, 0($sp)
-        addi $sp, $sp, 4
-        jr $ra
+
+    A:
+    subi $t5, $t0, 4
+    beq $t5, 0, move_left
+    move_left:
+    jal delete_capsule
+    subi $t0, $t0, 4
+    jal make_capsule
+    # orientation will be the same
+
+    D:
+    addi $t5, $t0, 8
+    beq $t5, 0, move_right
+    move_right:
+    jal delete_capsule
+    addi $t0, $t0, 8
+    jal make_capsule
+
+    S:
+    addi $t5, $t0, 256
+    beq $t5, 0, move_down
+    move_down:
+    jal delete_capsule
+    addi $t0, $t0, 256
+    jal make_capsule
+
+
+
+    # W:
+    # addi $sp, $sp, -4
+    # sw $ra, 0($sp)
+        # beq $a3, 1, hor_to_ver
+        # beq $a3, 2, ver_to_hor
+        # hor_to_ver: # horizontal to vertical
+        # add $t5, $t0, 256 # check if the block under the head is colored
+        # bne $t5, 0, W_end
+        # jal delete_capsule
+        # addi $a3, $zero, 2
+        # jal make_capsule
+        # W_end:
+        # lw $ra, 0($sp)
+        # addi $sp, $sp, 4
+        # jr $ra
         
         
         
