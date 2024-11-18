@@ -59,7 +59,8 @@ BLACK:
 	.text
 	.globl main
 
-    ##### Set up the walls.
+
+    ############################# Set up walls ################################
 
     li $t1, 0x808080  # Store gray in $t1.
     lw $a0, LEFT # Set t0 the first address to be painted (left neck)
@@ -97,19 +98,18 @@ BLACK:
     add $t0, $zero, $zero
     jal draw_horizontal_line
 
-    ##### First capsule
+    ############################# First capsule ################################
     lw $t0, MIDDLE
     addi $a3, $zero, 1
     jal create_capsule
+    
+    j game_loop
 
     #### Delete capsule
     # lw $t0, MIDDLE
     # jal delete_capsule
 
-    li $v0, 10 # exit the program gracefully
-    syscall
-
-draw_vertical_line:
+ draw_vertical_line:
     #  $a0 = starting address
     #  $a1 = length of the line
     sw $t1, 0($a0) # Color a0 gray
@@ -173,7 +173,7 @@ determine_color_2:
         jr $ra
     is_yellow_2:
         lw $t2, YELLOW
-        jr $ra
+        jr $ra   
 
 create_capsule:
     # $t0 = head address of the capusle
@@ -207,6 +207,9 @@ make_capsule:
     # $t1 = color1
     # $t2 = color2
     # $a3 = direction (1 for horizontal and 2 for vertical)
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
+    
     sw $t1, 0($t0) # Color the head
 
     beq $a3, 1, horizontal_pixel # Check direction
@@ -220,88 +223,107 @@ make_capsule:
 
 delete_capsule:
     # $t0 = head address of the capusle
-    # $t1 = color1
-    # $t2 = color2
     # $a3 = direction (1 for horizontal and 2 for vertical)
 
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
-
+    
+    add $s1, $zero, $t1 # store original colors for later restoration
+    add $s2, $zero, $t2
     lw $t1, BLACK
     lw $t2, BLACK
     jal make_capsule
-
+    add $t1, $zero, $s1 # restore t1 and t2
+    add $t2, $zero, $s2
+    
     lw $ra, 0($sp)         # Restore $ra from the stack
     addi $sp, $sp, 4       # Deallocate stack space
 
     jr $ra
 
 
-    # Run the game.
 main:
-    # Initialize the game
+
 
 game_loop:
     # 1a. Check if key has been pressed
     lw $t3, ADDR_KBRD # t3 is the base address for keyboard
     lw $t4, 0($t3) # load value at ADDR_KBRD to t4
-    beq $t4, 0, sleep
+    # beq $t4, 0, sleep
     # 1b. Check which key has been pressed
-    lw $t4, 1($t3) # load keyboard value to t4
+    lw $t3, KEY_VAL
+    lw $t4, 0($t3) # load keyboard value to t4
     beq $t4, 0x77, W
     beq $t4, 0x61, A
     beq $t4, 0x73, S
     beq $t4, 0x64, D
     beq $t4, 0x71, quit
+    j game_loop
+    W:
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
+        beq $a3, 1, hor_to_ver
+        beq $a3, 2, ver_to_hor
+        hor_to_ver: # horizontal to vertical
+        addi $t5, $t0, 256 # check if the block under the head is colored
+        
+        bne $t5, 0, W_end
+        jal delete_capsule
+        addi $a3, $zero, 2
+        jal make_capsule
+        W_end:
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
+        jr $ra
+        ver_to_hor:
+        subi $t5, $t0, 4 # check if the block to the left of the head is colored
+        bne $t5 0, W_end
+        jal delete_capsule
+        addi $a3, $zero, 1
+        add $t0, $zero, $t5 # change the head
+        # switch t1 and t2
+        add $t6, $zero, $t2
+        add $t2, $zero, $t3
+        add $t3, $zero, $t6
+        jal make_capsule
+    jr $ra
 
     A:
-    subi $t5, $t0, 4
-    beq $t5, 0, move_left
-    move_left:
-    jal delete_capsule
-    subi $t0, $t0, 4
-    jal make_capsule
-    # orientation will be the same
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
+        subi $t5, $t0, 4
+        beq $t5, 0, move_left
+        move_left:
+        jal delete_capsule
+        subi $t0, $t0, 4
+        jal make_capsule
+        # orientation will be the same
+    jr $ra
 
     D:
-    addi $t5, $t0, 8
-    beq $t5, 0, move_right
-    move_right:
-    jal delete_capsule
-    addi $t0, $t0, 8
-    jal make_capsule
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
+        addi $t5, $t0, 8
+        beq $t5, 0, move_right
+        move_right:
+        jal delete_capsule
+        addi $t0, $t0, 4
+        jal make_capsule
+    jr $ra
 
     S:
-    addi $t5, $t0, 256
-    beq $t5, 0, move_down
-    move_down:
-    jal delete_capsule
-    addi $t0, $t0, 256
-    jal make_capsule
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
+        addi $t5, $t0, 256
+        beq $t5, 0, move_down
+        move_down:
+        jal delete_capsule
+        addi $t0, $t0, 256
+        jal make_capsule
+    jr $ra
 
 
-
-    # W:
-    # addi $sp, $sp, -4
-    # sw $ra, 0($sp)
-        # beq $a3, 1, hor_to_ver
-        # beq $a3, 2, ver_to_hor
-        # hor_to_ver: # horizontal to vertical
-        # add $t5, $t0, 256 # check if the block under the head is colored
-        # bne $t5, 0, W_end
-        # jal delete_capsule
-        # addi $a3, $zero, 2
-        # jal make_capsule
-        # W_end:
-        # lw $ra, 0($sp)
-        # addi $sp, $sp, 4
-        # jr $ra
-        
-        
-        
-    A:
-    S:
-    D:
+    
 
     # 2a. Check for collisions
 	# 2b. Update locations (capsules)
@@ -312,5 +334,9 @@ game_loop:
     # j game_loop
 
 quit:
+    li $v0, 10 # exit the program gracefully
+    syscall
+    
+    
     li $v0, 10 # exit the program gracefully
     syscall
