@@ -99,8 +99,7 @@ BLACK:
     jal draw_horizontal_line
 
     ############################# First capsule ################################
-    lw $t0, MIDDLE
-    addi $a3, $zero, 1
+main:    
     jal create_capsule
     
     j game_loop
@@ -130,18 +129,6 @@ draw_horizontal_line:
     j draw_horizontal_line
     draw_horizontal_line_end:
     jr $ra
-
-    ##### First capsule
-    lw $t0, MIDDLE
-    addi $a3, $zero, 1
-    jal create_capsule
-    
-    lw $t0, BOTTOMLEFT
-    addi $a3, $zero, 1
-    jal create_capsule
-
-    li $v0, 10 # exit the program gracefully
-    syscall
 
 determine_color_1:
     # Map number 0,1,2 to the three colors.
@@ -178,6 +165,9 @@ determine_color_2:
 create_capsule:
     # $t0 = head address of the capusle
     # $a3 = direction (1 for horizontal and 2 for vertical)
+    lw $t0, MIDDLE
+    addi $a3, $zero, 1
+    
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
 
@@ -246,7 +236,7 @@ delete_capsule:
     jr $ra
 
 
-main:
+
 
 
 game_loop:
@@ -337,15 +327,22 @@ game_loop:
         # TODO: Need change here.
         # beq $t5, 0, move_down
         lw $t5, 0($t5)
-        bne $t5, 0x0, S_end
+        bne $t5, 0x0, collision # instead of S_end
         move_down:
         jal delete_capsule
         addi $t0, $t0, 256
         jal make_capsule
-    S_end:
-    lw $ra, 0($sp)
-    addi $sp, $sp, 4
-    jr $ra
+    # S_end:
+    # lw $ra, 0($sp)
+    # addi $sp, $sp, 4
+    # jr $ra
+    collision: # Assumption: This is the only possible place to "halt" current capsule and make a new capsule.
+        # Eliminate 4-in-a-row, iteratively.
+        
+        # If the bottle entrance is blocked, end the game. [I don't think we really have to implement this]
+    
+        j main # Create a new capsule at the top and refresh all capsule-related variables (t0,a3,t1,t2) to the new capsule.
+        
 
 
     
