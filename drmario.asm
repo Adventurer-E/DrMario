@@ -267,7 +267,9 @@ game_loop:
         hor_to_ver: # horizontal to vertical
         addi $t5, $t0, 256 # check if the block under the head is colored
         
-        bne $t5, 0, W_end
+        
+        lw $t5, 0($t5)
+        bne $t5, 0x0, W_end
         jal delete_capsule
         addi $a3, $zero, 2
         jal make_capsule
