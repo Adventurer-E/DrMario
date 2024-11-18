@@ -59,6 +59,12 @@ BLACK:
 	.text
 	.globl main
 
+    ############################# Set up array to store capsules #############
+    # My idea: there's no tuple structure in Assembly, so every 4 digits store
+    # a capsule: (head_address, head_color, tail_address, tail_color). There 
+    # are in total 3732 blocks available, so the array needs size 3732*2=7464.
+    
+
 
     ############################# Set up walls ################################
 
