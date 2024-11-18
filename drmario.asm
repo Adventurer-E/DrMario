@@ -249,7 +249,7 @@ game_loop:
     # 1a. Check if key has been pressed
     lw $t3, ADDR_KBRD # t3 is the base address for keyboard
     lw $t4, 0($t3) # load value at ADDR_KBRD to t4
-    # beq $t4, 0, sleep
+    beq $t4, 0, sleep
     # 1b. Check which key has been pressed
     lw $t3, KEY_VAL
     lw $t4, 0($t3) # load keyboard value to t4
@@ -258,6 +258,7 @@ game_loop:
     beq $t4, 0x73, S
     beq $t4, 0x64, D
     beq $t4, 0x71, quit
+    j sleep
     j game_loop
     W:
     addi $sp, $sp, -4
@@ -266,8 +267,6 @@ game_loop:
         beq $a3, 2, ver_to_hor
         hor_to_ver: # horizontal to vertical
         addi $t5, $t0, 256 # check if the block under the head is colored
-        
-        
         lw $t5, 0($t5)
         bne $t5, 0x0, W_end
         jal delete_capsule
@@ -279,7 +278,8 @@ game_loop:
         jr $ra
         ver_to_hor:
         subi $t5, $t0, 4 # check if the block to the left of the head is colored
-        bne $t5 0, W_end
+        lw $t5, 0($t5)
+        bne $t5, 0x0, W_end
         jal delete_capsule
         addi $a3, $zero, 1
         add $t0, $zero, $t5 # change the head
@@ -288,40 +288,58 @@ game_loop:
         add $t2, $zero, $t3
         add $t3, $zero, $t6
         jal make_capsule
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
     jr $ra
 
     A:
     addi $sp, $sp, -4
     sw $ra, 0($sp)
-        subi $t5, $t0, 4
-        beq $t5, 0, move_left
+        subi $t5, $t0, 4 # check if the block to the left of the head is colored
+        # beq $t5, 0, move_left
+        lw $t5, 0($t5)
+        bne $t5, 0x0, A_end
         move_left:
         jal delete_capsule
         subi $t0, $t0, 4
         jal make_capsule
         # orientation will be the same
+    A_end:
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
     jr $ra
 
     D:
     addi $sp, $sp, -4
     sw $ra, 0($sp)
-        addi $t5, $t0, 8
-        beq $t5, 0, move_right
+        addi $t5, $t0, 8 # check if the block to the right of the tail is colored
+        # beq $t5, 0, move_right
+        lw $t5, 0($t5)
+        bne $t5, 0x0, D_end
         move_right:
         jal delete_capsule
         addi $t0, $t0, 4
         jal make_capsule
+    D_end:
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
     jr $ra
 
     S:
     addi $sp, $sp, -4
     sw $ra, 0($sp)
         addi $t5, $t0, 256
-        beq $t5, 0, move_down
+        # TODO: Need change here.
+        # beq $t5, 0, move_down
+        lw $t5, 0($t5)
+        bne $t5, 0x0, S_end
         move_down:
         jal delete_capsule
         addi $t0, $t0, 256
         jal make_capsule
+    S_end:
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
     jr $ra
 
 
@@ -332,13 +350,13 @@ game_loop:
 	# 3. Draw the screen
 	# 4. Sleep
     sleep:
+    li $v0, 32
+    addi $a0, $zero, 17 # 16.67 milliseconds = 1/60 second
+    syscall
     # 5. Go back to Step 1
-    # j game_loop
+    j game_loop
 
 quit:
     li $v0, 10 # exit the program gracefully
     syscall
     
-    
-    li $v0, 10 # exit the program gracefully
-    syscall
