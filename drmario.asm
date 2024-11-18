@@ -216,9 +216,13 @@ make_capsule:
     beq $a3, 2, vertical_pixel
     horizontal_pixel:
         sw $t2, 4($t0)
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
         jr $ra
     vertical_pixel:
         sw $t2, 256($t0)
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
         jr $ra
 
 delete_capsule:
@@ -278,15 +282,16 @@ game_loop:
         jr $ra
         ver_to_hor:
         subi $t5, $t0, 4 # check if the block to the left of the head is colored
-        lw $t5, 0($t5)
-        bne $t5, 0x0, W_end
+        lw $t6, 0($t5) # t6 temporarily stores the color to the left of the head
+        # Note here that t5 is the address, t6 is the value.
+        bne $t6, 0x0, W_end
         jal delete_capsule
         addi $a3, $zero, 1
         add $t0, $zero, $t5 # change the head
         # switch t1 and t2
-        add $t6, $zero, $t2
-        add $t2, $zero, $t3
-        add $t3, $zero, $t6
+        add $t6, $zero, $t1 # now t6 stores t2 (temp for var switch)
+        add $t1, $zero, $t2
+        add $t2, $zero, $t6
         jal make_capsule
     lw $ra, 0($sp)
     addi $sp, $sp, 4
