@@ -350,44 +350,30 @@ game_loop:
         down_horizontal:
         addi $t5, $t0, 256                      # from base address to memory address of pixel below
         lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
-        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
+        bne $t6, 0x0, collision                 # check to see if that value is black or not and if it is not black, then go to S_end
         addi $t5, $t0, 260                      # from base address to memory address of pixel below and 1 unit right
-        lw $t6, 0($t0)                          # fetch its value from memory and store it temporarily in a register
-        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
+        lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+        bne $t6, 0x0, collision                 # check to see if that value is black or not and if it is not black, then go to S_end
         # path is clear
         jal delete_capsule
         addi $t0, $t0, 256
-        jal create_capsule
+        jal make_capsule
         j S_end
 
         down_vertical:
         addi $t5, $t0, 512                      # from base address to memory address of pixel 2 rows below
         lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
-        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
+        bne $t6, 0x0, collision                     # check to see if that value is black or not and if it is not black, then go to S_end
         # path is clear
         jal delete_capsule
         addi $t0, $t0, 256
-        jal create_capsule
+        jal make_capsule
 
     S_end:
     lw $ra, 0($sp)
     addi $sp, $sp, 4
     jr $ra
-
-
-
         # go the memory address of the pixel below the base address
-
-
-
-
-
-
-
-    # S_end:
-    # lw $ra, 0($sp)
-    # addi $sp, $sp, 4
-    # jr $ra
     collision: # Assumption: This is the only possible place to "halt" current capsule and make a new capsule.
         # Eliminate 4-in-a-row, iteratively.
 
