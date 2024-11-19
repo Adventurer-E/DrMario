@@ -569,16 +569,17 @@ check_bottom_end:
 j check_end
 four_found:
     lw $t1, BLACK
-    lw $t2, 0($s4)
+    lw $t2, 0($s4)      # load memory address of index 0 in $t2
+    sw $t1, 0($t2)      # color that memory address black
+
+    lw $t2, 4($s4)      # load memory address of index 1 in $t2
     sw $t1, 0($t2)
-    # sw $t1, 0($s4)
-    # sw $t1, 4($s4)
-    # sw $t1, 8($s4)
-    # sw $t1, 12($s4)
 
-    # maintain capsule array
+    lw $t2, 8($s4)      # load memory address of index 2 in $t2
+    sw $t1, 0($t2)
 
-    # drop
+    lw $t2, 12($s4)      # load memory address of index 3 in $t2
+    sw $t1, 0($t2)
 check_end:
 
 jal create_capsule
