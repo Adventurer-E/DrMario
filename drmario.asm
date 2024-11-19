@@ -540,7 +540,7 @@ four_found:
 drop:
     # start from s0, the base address of Array. Traverse Array to find all half-capsules.
     # Since the old capusle is no longer used, t0,t1,t2,t3 will be reset.
-    # During the traversal, t0=head_address, t1=head_color, t2=tail_color, t5=tail_address
+    # During the traversal, t0=head_address, t1=head_color, t2=tail_color
     add $t6, $s0, $zero # t6 stores the current address (location) in Array
     # If current capsule is full, (recursively) perform S.
     # If it's half, drop the half capsule.
@@ -551,9 +551,35 @@ drop:
     bne $t2, 0x0, half # t1 black, t2 not black
     j wholly_black # both black
     half_or_full:
-    
+    bne $t2, 0x0, full # both not black
+    j half # t1 not black, t2 black
+    full:
+        lw $t0, 0($t6)
+        lw $t5, 8($t6)
+        sub $t5, $t5, $t0 # check direction
+        beq $t5, 4, is_horizontal
+        beq $t5, 256, is_vertical
+        # Now that t0,t1,t2,a3 are initialized
+        full_drop
+        # Update the capsule info in Array
+        sw $t0, 0($t6)
+        proceed_loop
+        is_horizontal:
+        addi $sp, $sp, -4
+        sw $ra, 0($sp)
+            addi $a3, $zero, 1
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
+        jr $ra
+        is_vertical:
+        addi $sp, $sp, -4
+        sw $ra, 0($sp)
+            addi $a3, $zero, 2
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
+        jr $ra
     half:
-    
+        
     wholly_black:
 
 # check to see the color of the consecutive pixels have the same color
