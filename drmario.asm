@@ -342,10 +342,10 @@ game_loop:
         jal delete_capsule
         addi $t0, $t0, 256
         jal make_capsule
-    # S_end:
-    # lw $ra, 0($sp)
-    # addi $sp, $sp, 4
-    # jr $ra
+    S_end:
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
+    jr $ra
     collision: # Assumption: This is the only possible place to "halt" current capsule and make a new capsule.
         # Eliminate 4-in-a-row, iteratively.
         
