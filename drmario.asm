@@ -454,7 +454,33 @@ la $s4, Arr
 add $s5, $s4, $zero                 # keeps track of the current memory address
 
 lw $t1, 0($t0)                      # load pixel color of base address
+jal horizontal_check
+beq $a3, 1, horizontal_tail_elim
+beq $a3, 2, vertical_tail_elim
+horizontal_tail_elim:
+    addi $t0, $t0, 4
+    j tail_elim_end
+vertical_tail_elim:
+    addi $t0, $t0, 256
+tail_elim_end:
+jal horizontal_check
+beq $a3, 1, horizontal_tail_elim_restore
+beq $a3, 2, vertical_tail_elim_restore
+horizontal_tail_elim_restore:
+    subi $t0, $t0, 4
+    j tail_elim_restore_end
+vertical_tail_elim_restore:
+    subi $t0, $t0, 256
+tail_elim_restore_end:
+
+
+
+
+jal create_capsule
+j game_loop
 horizontal_check:                   # check to see if horizontal pixels have the same color
+addi $sp, $sp, -4
+sw $ra, 0($sp)
 
 check_left:                         # go 3 pixels to the left
 add $t7, $zero, $zero               # counter
@@ -567,6 +593,8 @@ beq $t7, 4, four_found
 
 check_bottom_end:
 j check_end
+
+
 four_found:
     lw $t1, BLACK
     lw $t2, 0($s4)      # load memory address of index 0 in $t2
@@ -581,9 +609,11 @@ four_found:
     lw $t2, 12($s4)      # load memory address of index 3 in $t2
     sw $t1, 0($t2)
 check_end:
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
 
-jal create_capsule
-j game_loop
+
 
 
 drop:
