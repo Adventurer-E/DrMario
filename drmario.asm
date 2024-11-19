@@ -719,6 +719,7 @@ drop_loop:
         sw $t9, 8($t6)
         sw $s2, 12($t6)
         add $t6, $t6, 16
+        subi $s3, $s3, 4
         j drop_loop
 
 full_drop:
