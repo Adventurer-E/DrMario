@@ -465,6 +465,7 @@ vertical_tail_elim:
     addi $t0, $t0, 256
 tail_elim_end:
 jal horizontal_check
+# add $s5, $s4, $zero
 beq $a3, 1, horizontal_tail_elim_restore
 beq $a3, 2, vertical_tail_elim_restore
 horizontal_tail_elim_restore:
@@ -610,15 +611,18 @@ four_found:
 lw $t2, BLACK
 add $t5, $s0, $zero                                     # initialize $s3 = current memory address of Array
 
-addi $t7, $t5, 4                                        # load color of this memory address
-beq, $t7, $t2, check_second
-j arr_loop_start
-check_second:
-addi $t7, $t7, 8
-beq $t7, $t2, exit_loop                                # check to see if $t7 is black
-j arr_loop_start
-
 arr_loop_start:
+addi $t7, $t5, 4                                        # load color of this memory address
+lw $t7, 0($t7)
+beq, $t7, $t2, check_second
+j arr_inner_loop_start
+check_second:
+addi $t7, $t5, 8
+lw $t7, 0($t7)
+beq $t7, $t2, exit_loop                                # check to see if $t7 is black
+j arr_inner_loop_start
+
+arr_inner_loop_start:
 add $t1, $zero, $zero                                   # inner loop counter
 add $s5, $s4, $zero                                     # initialize $s5 = current memory address of arr
 arr_loop:
