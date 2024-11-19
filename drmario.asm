@@ -111,40 +111,40 @@ Array: # array to store information of capsules
     jal draw_horizontal_line
 
     ############################# Set up viruses ################################
- # # Currently, 4 viruses.
-    # addi $t2, $zero, 4 # in this section (before making capsules), t2 stores the number of viruses
-    # add $t3, $zero, $zero # t3 stores current number of visuses (accumulator)
-# new_virus:
-    # # y-coord of random location
-    # li $v0, 42
-    # li $a0, 0
-    # li $a1, 30
-    # syscall # stored at a0
-    # subi $a0, $a0, 1 # first row inclusive
-    # sll $t4, $a0, 128 # times 256, temp stored in $t4
-    # lw $t0, LOWERHALF
-    # add $t0, $t0, $t4 # vertically moved
-    # # x-coord of random location
-    # li $v0, 42
-    # li $a0, 0
-    # li $a1, 62
-    # syscall # stored at a0
-    # sll $a0, $a0, 2 # times 4
-    # add $t0, $t0, $a0 # horizontally moved
-    # # random color
-    # li $v0, 42
-    # li $a0, 0
-    # li $a1, 3
-    # syscall
-    # add $t1, $zero, $a0
-    # jal determine_color_1
-    # # paint
-    # sw $t1, 0($t0)
-    # # increment
-    # addi $t3, $t3, 1
-    # beq $t3, $t2, virus_end
-    # j new_virus
-# virus_end:
+ # Currently, 4 viruses.
+    addi $t2, $zero, 4 # in this section (before making capsules), t2 stores the number of viruses
+    add $t3, $zero, $zero # t3 stores current number of visuses (accumulator)
+new_virus:
+    # y-coord of random location
+    li $v0, 42
+    li $a0, 0
+    li $a1, 30
+    syscall # stored at a0
+    subi $a0, $a0, 1 # first row inclusive
+    sll $t4, $a0, 128 # times 256, temp stored in $t4
+    lw $t0, LOWERHALF
+    add $t0, $t0, $t4 # vertically moved
+    # x-coord of random location
+    li $v0, 42
+    li $a0, 0
+    li $a1, 62
+    syscall # stored at a0
+    sll $a0, $a0, 2 # times 4
+    add $t0, $t0, $a0 # horizontally moved
+    # random color
+    li $v0, 42
+    li $a0, 0
+    li $a1, 3
+    syscall
+    add $t1, $zero, $a0
+    jal determine_color_1
+    # paint
+    sw $t1, 0($t0)
+    # increment
+    addi $t3, $t3, 1
+    beq $t3, $t2, virus_end
+    j new_virus
+virus_end:
 
     ############################# First capsule ################################
 main:    
@@ -423,7 +423,7 @@ lw $t1, 0($t0)                      # load pixel color of base address
 horizontal_check:                   # check to see if horizontal pixels have the same color
 
 check_left:                         # go 3 pixels to the left
-add, $t7, $zero, $zero
+add $t7, $zero, $zero               # counter
 
 subi $t5, $t0, 4                    # memory address of 1 pixel left
 lw $t6, 0($t5)                      # load pixel color of that memory address
@@ -468,7 +468,10 @@ beq $t7, 4, four_found
 check_right_end:
 
 four_found:
-
+    # color them black
+    # maintain capsule array
+    # drop
+    
 
 # check to see the color of the consecutive pixels have the same color
 # if yes, add 1 to the counter
