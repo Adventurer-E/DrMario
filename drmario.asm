@@ -57,6 +57,8 @@ BLACK:
     .word 0x000000
 Array: # array to store information of capsules
     .space 11196
+Arr: # array to store memory address of colors
+    .space 16
 ##############################################################################
 # Code
 ##############################################################################
@@ -147,9 +149,9 @@ new_virus:
 virus_end:
 
     ############################# First capsule ################################
-main:    
+main:
     jal create_capsule
-    
+
     j game_loop
 
     #### Delete capsule
@@ -208,14 +210,14 @@ determine_color_2:
         jr $ra
     is_yellow_2:
         lw $t2, YELLOW
-        jr $ra   
+        jr $ra
 
 create_capsule:
     # $t0 = head address of the capusle
     # $a3 = direction (1 for horizontal and 2 for vertical)
     lw $t0, MIDDLE
     addi $a3, $zero, 1
-    
+
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
 
@@ -247,7 +249,7 @@ make_capsule:
     # $a3 = direction (1 for horizontal and 2 for vertical)
     addi $sp, $sp, -4
     sw $ra, 0($sp)
-    
+
     sw $t1, 0($t0) # Color the head
 
     beq $a3, 1, horizontal_pixel # Check direction
@@ -269,7 +271,7 @@ delete_capsule:
 
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
-    
+
     add $s1, $zero, $t1 # store original colors for later restoration
     add $s2, $zero, $t2
     lw $t1, BLACK
@@ -277,7 +279,7 @@ delete_capsule:
     jal make_capsule
     add $t1, $zero, $s1 # restore t1 and t2
     add $t2, $zero, $s2
-    
+
     lw $ra, 0($sp)         # Restore $ra from the stack
     addi $sp, $sp, 4       # Deallocate stack space
 
@@ -419,6 +421,11 @@ game_loop:
 
         # j main # Create a new capsule at the top and refresh all capsule-related variables (t0,a3,t1,t2) to the new capsule.
 
+# $t5 stores the memory address of current pixel
+# $t6 stores the color of current pixel
+la $s4, Arr
+add $s5, $zero, $zero               # keeps track of the offset
+
 lw $t1, 0($t0)                      # load pixel color of base address
 horizontal_check:                   # check to see if horizontal pixels have the same color
 
@@ -429,20 +436,28 @@ subi $t5, $t0, 4                    # memory address of 1 pixel left
 lw $t6, 0($t5)                      # load pixel color of that memory address
 bne $t6, $t1, check_left_end        # $t1 = pixel color of base address, $t6 = pixel color of 1L
 addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+sw $t5, $s5($s4)                    # store current memory address into index 0
+addi $s5, $s5, 4
 
 subi $t5, $t0, 8                    # memory address 2 pixels left
-lw $t5, 0($t5)                      # load pixel color that memory address
-bne $t6, $t5, check_left_end        # $t5 = pixel color of 2L, $t6 = pixel color of 1L
+lw $t6, 0($t5)                      # load pixel color that memory address
+bne $t6, $t1, check_left_end        # $t5 = pixel color of 2L, $t6 = pixel color of 1L
 addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+sw $t5, $s5($s4)                    # store current memory address into index 1
+addi $s5, $s5, 4
 
-subi $t6, $t0, 12                   # memory address 3 pixels left
-lw $t6, 0($t6)                      # load pixel color that memory address
-bne $t5, $t6, check_left_end        # $t5 = pixel color of 2L, $t6 = pixel color of 3L
+subi $t5, $t0, 12                   # memory address 3 pixels left
+lw $t6, 0($t5)                      # load pixel color that memory address
+bne $t6, $t1, check_left_end         # $t5 = pixel color of 2L, $t6 = pixel color of 3L
 addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+sw $t5, $s5($s4)                      # store current memory address into index 2
+addi $s5, $s5, 4
 
 check_left_end:
 # go back to base address
 addi $t7, $t7, 1
+sw $t0, $s5($s4)                    # store base address into array
+addi $s5, $s5, 4
 beq $t7, 4, four_found              # all 3 pixels to the left have the same color
 
 check_right:
@@ -451,18 +466,23 @@ addi $t5, $t0, 4                    # memory address of 1 pixel right
 lw $t6, 0($t5)                      # load pixel color of that memory address
 bne $t6, $t1, check_right_end       # $t1 = pixel color of base address, $t6 = pixel color of 1R
 addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+sw $t5, $s5($s4)
+addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 addi $t5, $t0, 8                    # memory address 2 pixels right
-lw $t5, 0($t5)                      # load pixel color that memory address
-bne $t6, $t5, check_right_end       # $t5 = pixel color of 2R, $t6 = pixel color of 1R
+lw $t6, 0($t5)                      # load pixel color that memory address
+bne $t6, $t1, check_right_end       # $t5 = pixel color of 2R, $t6 = pixel color of 1R
 addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+sw $t5, $s5($s4)
+addi $s5, $s5, 4
 beq $t7, 4, four_found
 
-addi $t6, $t0, 12                   # memory address 3 pixels right
-lw $t6, 0($t6)                      # load pixel color that memory address
-bne $t5, $t6, check_right_end       # $t5 = pixel color of 2R, $t6 = pixel color of 3R
+addi $t5, $t0, 12                   # memory address 3 pixels right
+lw $t6, 0($t5)                      # load pixel color that memory address
+bne $t6, $t1, check_right_end       # $t5 = pixel color of 2R, $t6 = pixel color of 3R
 addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+sw $t5, $s5($s4)
 beq $t7, 4, four_found
 
 check_right_end:
