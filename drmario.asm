@@ -611,14 +611,22 @@ lw $t2, BLACK
 add $t5, $s0, $zero                                     # initialize $s3 = current memory address of Array
 
 addi $t7, $t5, 4                                        # load color of this memory address
-beq, $t7, $t2, exit_loop                                # check to see if $t7 is black
+beq, $t7, $t2, check_second
+j arr_loop_start
+check_second:
+addi $t7, $t7, 8
+beq $t7, $t2, exit_loop                                # check to see if $t7 is black
+j arr_loop_start
 
 arr_loop_start:
 add $t1, $zero, $zero                                   # inner loop counter
 add $s5, $s4, $zero                                     # initialize $s5 = current memory address of arr
 arr_loop:
-bne $s5, $t5, address_not_equal                         # check if the memory addresses are equal
-lw $t2, 4($s3)                                          # color stored in the memory address of next element in Arr = black
+lw $t6, 0($t5)
+lw $t7, 0($s5)
+bne $t6, $t7, address_not_equal                         # check if the memory addresses are equal
+sw $t2, 4($t5)                                          # color stored in the memory address of next element in Arr = black
+j arr_loop_end
 address_not_equal:
 addi $s5, $s5, 4                                        # go to the next memory address
 addi $t1, $t1, 1                                        # increment loop counter
