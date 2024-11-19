@@ -599,15 +599,35 @@ four_found:
     lw $t1, BLACK
     lw $t2, 0($s4)      # load memory address of index 0 in $t2
     sw $t1, 0($t2)      # color that memory address black
-
     lw $t2, 4($s4)      # load memory address of index 1 in $t2
     sw $t1, 0($t2)
-
     lw $t2, 8($s4)      # load memory address of index 2 in $t2
     sw $t1, 0($t2)
-
     lw $t2, 12($s4)      # load memory address of index 3 in $t2
     sw $t1, 0($t2)
+
+
+lw $t2, BLACK
+add $t1, $zero, $zero                                   # inner loop counter
+add $s3, $s0, $zero                                     # initialize $s3 = current memory address of Array
+
+arr_loop_start:
+add $s5, $s4, $zero                                     # initialize $s5 = current memory address of arr
+arr_loop:
+bne $s5, $s3, address_not_equal                         # check if the memory addresses are equal
+lw $t2, 4($s3)                                          # color stored in the memory address of next element in Arr = black
+address_not_equal:
+addi $s5, $s5, 4                                        # go to the next memory address
+addi $t1, $t1, 1                                        # increment loop counter
+beq $t1, 4, arr_loop_end                                # check to see if we have iterated through the entire array
+j arr_loop                                              # if we have reached the end, then continue the loop
+
+arr_loop_end:
+addi $s3, $s3, 8 # go to the next memory address in Array
+j arr_loop_start
+
+exit_loop:
+
 check_end:
 lw $ra, 0($sp)
 addi $sp, $sp, 4
