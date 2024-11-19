@@ -395,6 +395,72 @@ game_loop:
 
         # j main # Create a new capsule at the top and refresh all capsule-related variables (t0,a3,t1,t2) to the new capsule.
 
+lw $t1, 0($t0)                      # load pixel color of base address
+horizontal_check:                   # check to see if horizontal pixels have the same color
+
+check_left:                         # go 3 pixels to the left
+add, $t7, $zero, $zero
+
+subi $t5, $t0, 4                    # memory address of 1 pixel left
+lw $t6, 0($t5)                      # load pixel color of that memory address
+bne $t6, $t1, check_left_end        # $t1 = pixel color of base address, $t6 = pixel color of 1L
+addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+
+subi $t5, $t0, 8                    # memory address 2 pixels left
+lw $t5, 0($t5)                      # load pixel color that memory address
+bne $t6, $t5, check_left_end        # $t5 = pixel color of 2L, $t6 = pixel color of 1L
+addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+
+subi $t6, $t0, 12                   # memory address 3 pixels left
+lw $t6, 0($t6)                      # load pixel color that memory address
+bne $t5, $t6, check_left_end        # $t5 = pixel color of 2L, $t6 = pixel color of 3L
+addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+
+check_left_end:
+# go back to base address
+addi $t7, $t7, 1
+beq $t7, 4, four_found              # all 3 pixels to the left have the same color
+
+check_right:
+
+addi $t5, $t0, 4                    # memory address of 1 pixel right
+lw $t6, 0($t5)                      # load pixel color of that memory address
+bne $t6, $t1, check_right_end       # $t1 = pixel color of base address, $t6 = pixel color of 1R
+addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+beq $t7, 4, four_found
+
+addi $t5, $t0, 8                    # memory address 2 pixels right
+lw $t5, 0($t5)                      # load pixel color that memory address
+bne $t6, $t5, check_right_end       # $t5 = pixel color of 2R, $t6 = pixel color of 1R
+addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+beq $t7, 4, four_found
+
+addi $t6, $t0, 12                   # memory address 3 pixels right
+lw $t6, 0($t6)                      # load pixel color that memory address
+bne $t5, $t6, check_right_end       # $t5 = pixel color of 2R, $t6 = pixel color of 3R
+addi $t7, $t7, 1                    # consecutive values = +1 to the counter
+beq $t7, 4, four_found
+
+check_right_end:
+
+four_found:
+
+
+# check to see the color of the consecutive pixels have the same color
+# if yes, add 1 to the counter
+
+# iterate three pixels to the right
+
+vertical_check:         # check to see if vertical pixels have the same color
+
+
+# from base address to memory address of pixel to left
+# from base address to memory address of pixel to right
+# from base address to memory address of pixel to top
+# from base address to memory address of pixel to bottom
+
+
+
 add_capsule_in_array:
     addi $sp, $sp, -4
     sw $ra, 0($sp)
