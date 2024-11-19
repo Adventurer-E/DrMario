@@ -401,10 +401,6 @@ game_loop:
     j game_loop
 
 Q:
-    li $v0, 4               # Load the system call code for print_string
-    la $a0, msg             # Load address of the message into $a0
-    syscall                 # Make the system call to print the string
-
     li $v0, 10 # exit the program gracefully
     syscall
     
