@@ -121,7 +121,7 @@ new_virus:
     li $a1, 30
     syscall # stored at a0
     subi $a0, $a0, 1 # first row inclusive
-    sll $t4, $a0, 128 # times 256, temp stored in $t4
+    sll $t4, $a0, 8 # times 256, temp stored in $t4
     lw $t0, LOWERHALF
     add $t0, $t0, $t4 # vertically moved
     # x-coord of random location
@@ -129,6 +129,7 @@ new_virus:
     li $a0, 0
     li $a1, 62
     syscall # stored at a0
+    addi $a0, $a0, 1
     sll $a0, $a0, 2 # times 4
     add $t0, $t0, $a0 # horizontally moved
     # random color
