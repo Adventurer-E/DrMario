@@ -129,6 +129,7 @@ new_virus:
     li $a0, 0
     li $a1, 62
     syscall # stored at a0
+    addi $a0, $a0, 1
     sll $a0, $a0, 2 # times 4
     add $t0, $t0, $a0 # horizontally moved
     # random color
@@ -475,6 +476,9 @@ tail_elim_restore_end:
     j drop
 
 
+jal create_capsule
+j game_loop
+
 horizontal_check:                   # check to see if horizontal pixels have the same color
 addi $sp, $sp, -4
 sw $ra, 0($sp)
@@ -673,19 +677,19 @@ drop_loop:
         addi $t6, $t6, 16
         j drop_loop
         is_horizontal:
-        addi $sp, $sp, -4
-        sw $ra, 0($sp)
+        # addi $sp, $sp, -4
+        # sw $ra, 0($sp)
             addi $a3, $zero, 1
-        lw $ra, 0($sp)
-        addi $sp, $sp, 4
-        jr $ra
+        # lw $ra, 0($sp)
+        # addi $sp, $sp, 4
+        # jr $ra
         is_vertical:
-        addi $sp, $sp, -4
-        sw $ra, 0($sp)
+        # addi $sp, $sp, -4
+        # sw $ra, 0($sp)
             addi $a3, $zero, 2
-        lw $ra, 0($sp)
-        addi $sp, $sp, 4
-        jr $ra
+        # lw $ra, 0($sp)
+        # addi $sp, $sp, 4
+        # jr $ra
     half_1:
         add $t5, $t0, 256 # t5 is now the address of the block under the head
         bne $t5, 0x0, half_1_end
