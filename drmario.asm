@@ -254,7 +254,6 @@ game_loop:
     beq $t4, 0x71, quit
     j sleep
     j game_loop
-
     W:
     addi $sp, $sp, -4
     sw $ra, 0($sp)
@@ -318,53 +317,21 @@ game_loop:
         jal make_capsule
     D_end:
     lw $ra, 0($sp)
-    addi $sp, $sp, -4
-    jr $ra
-
-    S:
-    # $a3 = direction (1 for horizontal and 2 for vertical)
-    addi $sp, $sp, -4
-    sw $ra, 0($sp)
-        beq $a3, 1, down_horizontal             # check to see aligment is horizontal
-        beq $a3, 2, down_vertical               # check to see alignment is vertical
-
-        down_horizontal:
-        addi $t5, $t0, 256                      # from base address to memory address of pixel below
-        lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
-        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
-        addi $t5, $t0, 260                      # from base address to memory address of pixel below and 1 unit right
-        lw $t6, 0($t0)                          # fetch its value from memory and store it temporarily in a register
-        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
-        # path is clear
-        jal delete_capsule
-        addi $t0, $t0, 256
-        jal create_capsule
-        j S_end
-
-        down_vertical:
-        addi $t5, $t0, 512                      # from base address to memory address of pixel 2 rows below
-        lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
-        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
-        # path is clear
-        jal delete_capsule
-        addi $t0, $t0, 256
-        jal create_capsule
-
-    S_end:
-    lw $ra, 0($sp)
     addi $sp, $sp, 4
     jr $ra
 
-
-
-        # go the memory address of the pixel below the base address
-
-
-
-
-
-
-
+    S:
+    addi $sp, $sp, -4
+    sw $ra, 0($sp)
+        addi $t5, $t0, 256
+        # TODO: Need change here.
+        # beq $t5, 0, move_down
+        lw $t5, 0($t5)
+        bne $t5, 0x0, collision # instead of S_end
+        move_down:
+        jal delete_capsule
+        addi $t0, $t0, 256
+        jal make_capsule
     # S_end:
     # lw $ra, 0($sp)
     # addi $sp, $sp, 4
