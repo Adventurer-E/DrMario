@@ -447,7 +447,7 @@ add_capsule_in_array:
     add_capsule_in_array_end:
     addi $s3, $s3, 4 # increase the index by 4
 
-
+elimination_check:
 # $t5 stores the memory address of current pixel
 # $t6 stores the color of current pixel
 la $s4, Arr
@@ -593,25 +593,32 @@ drop:
     # If current capsule is full, (recursively) perform S.
     # If it's half, drop the half capsule.
     # If it's wholly black, disregard it: link it to the nex item in Array.
+drop_loop:
+    lw $t0, 0($t6)
+    lw $t5, 8($t6)
     lw $t1, 4($t6)
     lw $t2, 12($t6)
     bne $t1, 0x0, half_or_full
-    bne $t2, 0x0, half # t1 black, t2 not black
+    bne $t2, 0x0, half_2 # t1 black, t2 not black
     j wholly_black # both black
     half_or_full:
     bne $t2, 0x0, full # both not black
-    j half # t1 not black, t2 black
+    j half_1 # t1 not black, t2 black
     full:
-        lw $t0, 0($t6)
-        lw $t5, 8($t6)
         sub $t5, $t5, $t0 # check direction
         beq $t5, 4, is_horizontal
         beq $t5, 256, is_vertical
         # Now that t0,t1,t2,a3 are initialized
-        # full_drop
+        jal full_drop
         # Update the capsule info in Array
         sw $t0, 0($t6)
-        # proceed_loop
+        sw $t1, 4($t6)
+        sw $t2, 12($t6)
+        addi $t5, $t5, 4
+        sw $t5, 8($t6)
+        # TODO: should recheck this capsule, but I'm afraid the loop will never halt
+        addi $t6, $t6, 16
+        j drop_loop
         is_horizontal:
         addi $sp, $sp, -4
         sw $ra, 0($sp)
@@ -626,9 +633,103 @@ drop:
         lw $ra, 0($sp)
         addi $sp, $sp, 4
         jr $ra
-    half:
-
+    half_1:
+        add $t5, $t0, 256 # t5 is now the address of the block under the head
+        bne $t5, 0x0, half_1_end
+        jal one_drop_1
+        sw $t0, 0($t6)
+        sw $t1, 4($t6)
+        # TODO: should recheck this capsule, but I'm afraid the loop will never halt
+        j half_1
+        half_1_end:
+        addi $t6, $t6, 16
+        j drop_loop
+    half_2:
+        add $t0, $zero, $t5 # $t0 is the TAIL address
+        add $t5, $t0, 256 # t5 is now the address of the block under the TAIL
+        bne $t5, 0x0, half_2_end
+        jal one_drop_2
+        sw $t0, 8($t6)
+        sw $t2, 12($t6)
+        # TODO: should recheck this capsule, but I'm afraid the loop will never halt
+        j half_2
+        half_2_end:
+        addi $t6, $t6, 8
+        j drop_loop
     wholly_black:
+        # Shift all items in the array to the left.
+        # the next capsule = (t8, s1, t9, s2)
+        lw $t8, 16($t6)
+        lw $s1, 20($t6)
+        lw $t9, 24($t6)
+        lw $s2, 28($t6)
+        sw $t8, 0($t6)
+        sw $s1, 4($t6)
+        sw $t9, 8($t6)
+        sw $s2, 12($t6)
+        add $t6, $t6, 16
+        j drop_loop
+
+full_drop:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+        
+    beq $a3, 1, full_drop_horizontal             # check to see aligment is horizontal
+    beq $a3, 2, full_drop_vertical               # check to see alignment is vertical
+
+    full_drop_horizontal:
+    addi $t5, $t0, 256                      # from base address to memory address of pixel below
+    lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+    bne $t6, 0x0, full_drop_end                 # check to see if that value is black or not and if it is not black, then go to S_end
+    addi $t5, $t0, 260                      # from base address to memory address of pixel below and 1 unit right
+    lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+    bne $t6, 0x0, full_drop_end                 # check to see if that value is black or not and if it is not black, then go to S_end
+    # path is clear
+    jal delete_capsule
+    addi $t0, $t0, 256
+    jal make_capsule
+    jal full_drop
+
+    full_drop_vertical:
+    addi $t5, $t0, 512                      # from base address to memory address of pixel 2 rows below
+    lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+    bne $t6, 0x0, full_drop_end                     # check to see if that value is black or not and if it is not black, then go to S_end
+    # path is clear
+    jal delete_capsule
+    addi $t0, $t0, 256
+    jal make_capsule
+    jal full_drop
+full_drop_end: 
+# j elimination_check
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
+
+one_drop_1:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+    add $s1, $zero, $t1
+    lw $t1, BLACK
+    sw $t1, 0($t0)
+    add $t1, $zero, $s1
+    add $t0, $t0, 256
+    sw $t1, 0($t0)
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
+
+one_drop_2:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+    add $s2, $zero, $t2
+    lw $t2, BLACK
+    sw $t2, 0($t0)
+    add $t2, $zero, $s2
+    add $t0, $t0, 256
+    sw $t2, 0($t0)
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
 
 # check to see the color of the consecutive pixels have the same color
 # if yes, add 1 to the counter
@@ -646,7 +747,7 @@ vertical_check:         # check to see if vertical pixels have the same color
 
 
 
-elimination_check:
+# elimination_check:
     # For each block (2 digits) in the array, if it is checked, pass; 
     # if it is not checked yet, traverse the row in which this block is located (by address, you might need a helper fucntion),
     # traverse all blocks on this row and in the array, count the blocks with the same color while marking them as checked,
