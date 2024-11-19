@@ -606,12 +606,14 @@ four_found:
     lw $t2, 12($s4)      # load memory address of index 3 in $t2
     sw $t1, 0($t2)
 
-
 lw $t2, BLACK
-add $t1, $zero, $zero                                   # inner loop counter
-add $s3, $s0, $zero                                     # initialize $s3 = current memory address of Array
+add $t5, $s0, $zero                                     # initialize $s3 = current memory address of Array
+
+addi $t7, $t5, 4                                        # load color of this memory address
+beq, $t7, $t2, exit_loop                                # check to see if $t7 is black
 
 arr_loop_start:
+add $t1, $zero, $zero                                   # inner loop counter
 add $s5, $s4, $zero                                     # initialize $s5 = current memory address of arr
 arr_loop:
 bne $s5, $s3, address_not_equal                         # check if the memory addresses are equal
@@ -623,7 +625,7 @@ beq $t1, 4, arr_loop_end                                # check to see if we hav
 j arr_loop                                              # if we have reached the end, then continue the loop
 
 arr_loop_end:
-addi $s3, $s3, 8 # go to the next memory address in Array
+addi $t5, $t5, 8 # go to the next memory address in Array
 j arr_loop_start
 
 exit_loop:
