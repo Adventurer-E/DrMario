@@ -235,7 +235,15 @@ delete_capsule:
 
     jr $ra
 
+generate_virus:
+# initialize loop counter
+# beq, 4 check to see loop counter == 4
+draw_virus_loop:
+# randomly generate a color and store it
+# randomly generate a location
 
+j draw_virus_loop
+end_draw_virus_loop:
 
 
 
@@ -246,14 +254,16 @@ game_loop:
     beq $t4, 0, sleep
     # 1b. Check which key has been pressed
     lw $t3, KEY_VAL
-    lw $t4, 0($t3) # load keyboard value to t4
-    beq $t4, 0x77, W
+    lw $t4, 0($t3)              # load keyboard value to t4
+    beq $t4, 0x77, W            # 0x77 is the ASCII value for W
     beq $t4, 0x61, A
     beq $t4, 0x73, S
     beq $t4, 0x64, D
-    beq $t4, 0x71, quit
+    # beq $t4, , P (e)
+    beq $t4, 0x71, Q
     j sleep
     j game_loop
+
     W:
     addi $sp, $sp, -4
     sw $ra, 0($sp)
@@ -317,35 +327,67 @@ game_loop:
         jal make_capsule
     D_end:
     lw $ra, 0($sp)
-    addi $sp, $sp, 4
+    addi $sp, $sp, -4
     jr $ra
 
     S:
+    # $a3 = direction (1 for horizontal and 2 for vertical)
     addi $sp, $sp, -4
     sw $ra, 0($sp)
-        addi $t5, $t0, 256
-        # TODO: Need change here.
-        # beq $t5, 0, move_down
-        lw $t5, 0($t5)
-        bne $t5, 0x0, collision # instead of S_end
-        move_down:
+        beq $a3, 1, down_horizontal             # check to see aligment is horizontal
+        beq $a3, 2, down_vertical               # check to see alignment is vertical
+
+        down_horizontal:
+        addi $t5, $t0, 256                      # from base address to memory address of pixel below
+        lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
+        addi $t5, $t0, 260                      # from base address to memory address of pixel below and 1 unit right
+        lw $t6, 0($t0)                          # fetch its value from memory and store it temporarily in a register
+        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
+        # path is clear
         jal delete_capsule
         addi $t0, $t0, 256
-        jal make_capsule
+        jal create_capsule
+        j S_end
+
+        down_vertical:
+        addi $t5, $t0, 512                      # from base address to memory address of pixel 2 rows below
+        lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+        bne $t6, 0x0, S_end                     # check to see if that value is black or not and if it is not black, then go to S_end
+        # path is clear
+        jal delete_capsule
+        addi $t0, $t0, 256
+        jal create_capsule
+
+    S_end:
+    lw $ra, 0($sp)
+    addi $sp, $sp, 4
+    jr $ra
+
+
+
+        # go the memory address of the pixel below the base address
+
+
+
+
+
+
+
     # S_end:
     # lw $ra, 0($sp)
     # addi $sp, $sp, 4
     # jr $ra
     collision: # Assumption: This is the only possible place to "halt" current capsule and make a new capsule.
         # Eliminate 4-in-a-row, iteratively.
-        
+
         # If the bottle entrance is blocked, end the game. [I don't think we really have to implement this]
-    
+
         # j main # Create a new capsule at the top and refresh all capsule-related variables (t0,a3,t1,t2) to the new capsule.
-        
 
 
-    
+
+
 
     # 2a. Check for collisions
 	# 2b. Update locations (capsules)
@@ -358,7 +400,11 @@ game_loop:
     # 5. Go back to Step 1
     j game_loop
 
-quit:
+Q:
+    li $v0, 4               # Load the system call code for print_string
+    la $a0, msg             # Load address of the message into $a0
+    syscall                 # Make the system call to print the string
+
     li $v0, 10 # exit the program gracefully
     syscall
     
