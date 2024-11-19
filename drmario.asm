@@ -351,8 +351,16 @@ game_loop:
         
         # If the bottle entrance is blocked, end the game. [I don't think we really have to implement this]
     
-        # j main # Create a new capsule at the top and refresh all capsule-related variables (t0,a3,t1,t2) to the new capsule.
-        
+        # j main # Create a new capsule at the top and refresh all capsule-related variables (t0,a3,t1,t2) to the new capsule.        
+
+
+
+
+
+    li $v0, 10 # exit the program gracefully
+    syscall
+
+
 
 add_capsule_in_array:
     addi $sp, $sp, -4
