@@ -617,7 +617,7 @@ arr_loop_start:
 add $t1, $zero, $zero                                   # inner loop counter
 add $s5, $s4, $zero                                     # initialize $s5 = current memory address of arr
 arr_loop:
-bne $s5, $s3, address_not_equal                         # check if the memory addresses are equal
+bne $s5, $t5, address_not_equal                         # check if the memory addresses are equal
 lw $t2, 4($s3)                                          # color stored in the memory address of next element in Arr = black
 address_not_equal:
 addi $s5, $s5, 4                                        # go to the next memory address
