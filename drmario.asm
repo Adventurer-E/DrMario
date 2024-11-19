@@ -56,7 +56,7 @@ YELLOW:
 BLACK:
     .word 0x000000
 Array: # array to store information of capsules
-    .space 11196
+    .space 29856
 Arr: # array to store memory address of colors
     .space 16
 ##############################################################################
@@ -67,10 +67,8 @@ Arr: # array to store memory address of colors
 
     ############################# Set up array to store capsules #############
     # My idea: there's no tuple structure in Assembly, so every 6 digits store
-    # a capsule: (head_address, head_color, head_checked,
-    # tail_address, tail_color, tail_checked). _checked are for each row check
-    # in elimination check and should reset to zero after each row check. There
-    # are in total 3732 blocks available, so the array needs size 3732*3=11196.
+    # a capsule: (head_address, head_color, tail_address, tail_color). There
+    # are in total 3732 blocks available, so the array needs size 3732*2*4=29856.
     la $s0, Array # s0 stores the address of array
     add $s3, $zero, $zero # s3 stores the current index in the array (initialized at 0)
 
@@ -285,15 +283,6 @@ delete_capsule:
 
     jr $ra
 
-generate_virus:
-# initialize loop counter
-# beq, 4 check to see loop counter == 4
-draw_virus_loop:
-# randomly generate a color and store it
-# randomly generate a location
-
-j draw_virus_loop
-end_draw_virus_loop:
 
 
 
@@ -546,7 +535,26 @@ four_found:
 
     # maintain capsule array
     # drop
+
+
+drop:
+    # start from s0, the base address of Array. Traverse Array to find all half-capsules.
+    # Since the old capusle is no longer used, t0,t1,t2,t3 will be reset.
+    # During the traversal, t0=head_address, t1=head_color, t2=tail_color, t5=tail_address
+    add $t6, $s0, $zero # t6 stores the current address (location) in Array
+    # If current capsule is full, (recursively) perform S.
+    # If it's half, drop the half capsule.
+    # If it's wholly black, disregard it: link it to the nex item in Array.
+    lw $t1, 4($t6)
+    lw $t2, 12($t6)
+    bne $t1, 0x0, half_or_full
+    bne $t2, 0x0, half # t1 black, t2 not black
+    j wholly_black # both black
+    half_or_full:
     
+    half:
+    
+    wholly_black:
 
 # check to see the color of the consecutive pixels have the same color
 # if yes, add 1 to the counter
@@ -571,10 +579,9 @@ add_capsule_in_array:
     add $t7, $t7, $s0 # address = base address (s0) + offset
     sw $t0, 0($t7) # load head_address
     sw $t1, 4($t7) # load head_color
-    sw $zero, 8($t7) # load head_checked
     beq $a3, 1, horizontal_tail
     beq $a3, 2, vertical_tail
-    addi $s3, $s3, 6 # increase the index by 6
+    addi $s3, $s3, 4 # increase the index by 4
     lw $ra, 0($sp)
     addi $sp, $sp, 4
     jr $ra
@@ -582,9 +589,8 @@ add_capsule_in_array:
         addi $sp, $sp, -4
         sw $ra, 0($sp)
         addi $t5, $t0, 4
-        sw $t5, 12($t7) # load tail_address
-        sw $t2, 16($t7) # load tail_color
-        sw $zero, 20($t7) # load tail_checked
+        sw $t5, 8($t7) # load tail_address
+        sw $t2, 12($t7) # load tail_color
         lw $ra, 0($sp)
         addi $sp, $sp, 4
         jr $ra
@@ -592,14 +598,13 @@ add_capsule_in_array:
         addi $sp, $sp, -4
         sw $ra, 0($sp)
         addi $t5, $t0, 256
-        sw $t5, 12($t7) # load tail_address
-        sw $t2, 16($t7) # load tail_color
-        sw $zero, 20($t7) # load tail_checked
+        sw $t5, 8($t7) # load tail_address
+        sw $t2, 12($t7) # load tail_color
         lw $ra, 0($sp)
         addi $sp, $sp, 4
         jr $ra
 elimination_check:
-    # For each block (3 digits) in the array, if it is checked, pass; 
+    # For each block (2 digits) in the array, if it is checked, pass; 
     # if it is not checked yet, traverse the row in which this block is located (by address, you might need a helper fucntion),
     # traverse all blocks on this row and in the array, count the blocks with the same color while marking them as checked,
     # when the counter reaches 4, remove every block of this color on this row.
