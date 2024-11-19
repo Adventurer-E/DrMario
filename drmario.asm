@@ -390,6 +390,12 @@ add_capsule_in_array:
         addi $sp, $sp, 4
         jr $ra
 elimination_check:
+    # For each block (3 digits) in the array, if it is checked, pass; 
+    # if it is not checked yet, traverse the row in which this block is located (by address, you might need a helper fucntion),
+    # traverse all blocks on this row and in the array, count the blocks with the same color while marking them as checked,
+    # when the counter reaches 4, remove every block of this color on this row.
+    # Let the blocks "drop" if necessary.
+    
     
 
     # 2a. Check for collisions
