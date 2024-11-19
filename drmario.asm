@@ -54,7 +54,7 @@ YELLOW:
 BLACK:
     .word 0x000000
 Array: # array to store information of capsules
-    .space 7464
+    .space 11196
 ##############################################################################
 # Code
 ##############################################################################
@@ -62,9 +62,11 @@ Array: # array to store information of capsules
 	.globl main
 
     ############################# Set up array to store capsules #############
-    # My idea: there's no tuple structure in Assembly, so every 4 digits store
-    # a capsule: (head_address, head_color, tail_address, tail_color). There 
-    # are in total 3732 blocks available, so the array needs size 3732*2=7464.
+    # My idea: there's no tuple structure in Assembly, so every 6 digits store
+    # a capsule: (head_address, head_color, head_checked,
+    # tail_address, tail_color, tail_checked). _checked are for each row check
+    # in elimination check and should reset to zero after each row check. There
+    # are in total 3732 blocks available, so the array needs size 3732*3=11196.
     la $s0, Array # s0 stores the address of array
     add $s3, $zero, $zero # s3 stores the current index in the array (initialized at 0)
 
@@ -360,9 +362,10 @@ add_capsule_in_array:
     add $t7, $t7, $s0 # address = base address (s0) + offset
     sw $t0, 0($t7) # load head_address
     sw $t1, 4($t7) # load head_color
+    sw $zero, 8($t7) # load head_checked
     beq $a3, 1, horizontal_tail
     beq $a3, 2, vertical_tail
-    addi $s3, $s3, 4 # increase the index by 4
+    addi $s3, $s3, 6 # increase the index by 6
     lw $ra, 0($sp)
     addi $sp, $sp, 4
     jr $ra
@@ -370,8 +373,9 @@ add_capsule_in_array:
         addi $sp, $sp, -4
         sw $ra, 0($sp)
         addi $t5, $t0, 4
-        sw $t5, 8($t7) # load tail_address
-        sw $t2, 12($t7) # load tail_color
+        sw $t5, 12($t7) # load tail_address
+        sw $t2, 16($t7) # load tail_color
+        sw $zero, 20($t7) # load tail_checked
         lw $ra, 0($sp)
         addi $sp, $sp, 4
         jr $ra
@@ -379,8 +383,9 @@ add_capsule_in_array:
         addi $sp, $sp, -4
         sw $ra, 0($sp)
         addi $t5, $t0, 256
-        sw $t5, 8($t7) # load tail_address
-        sw $t2, 12($t7) # load tail_color
+        sw $t5, 12($t7) # load tail_address
+        sw $t2, 16($t7) # load tail_color
+        sw $zero, 20($t7) # load tail_checked
         lw $ra, 0($sp)
         addi $sp, $sp, 4
         jr $ra
