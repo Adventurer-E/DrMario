@@ -472,12 +472,9 @@ horizontal_tail_elim_restore:
 vertical_tail_elim_restore:
     subi $t0, $t0, 256
 tail_elim_restore_end:
+    j drop
 
 
-
-
-jal create_capsule
-j game_loop
 horizontal_check:                   # check to see if horizontal pixels have the same color
 addi $sp, $sp, -4
 sw $ra, 0($sp)
@@ -646,11 +643,14 @@ drop:
     # If current capsule is full, (recursively) perform S.
     # If it's half, drop the half capsule.
     # If it's wholly black, disregard it: link it to the nex item in Array.
+    addi $t9, $zero, 1 # (initializing) detector to see if anything changes
 drop_loop:
     lw $t0, 0($t6)
     lw $t5, 8($t6)
     lw $t1, 4($t6)
     lw $t2, 12($t6)
+    beq $t9, $zero, drop_end
+    add $t9, $zero, $zero # detector to see if anything changes
     bne $t1, 0x0, half_or_full
     bne $t2, 0x0, half_2 # t1 black, t2 not black
     j wholly_black # both black
@@ -712,6 +712,7 @@ drop_loop:
     wholly_black:
         # Shift all items in the array to the left.
         # the next capsule = (t8, s1, t9, s2)
+        addi $t9, $zero, 1
         lw $t8, 16($t6)
         lw $s1, 20($t6)
         lw $t9, 24($t6)
@@ -742,6 +743,7 @@ sw $ra, 0($sp)
     jal delete_capsule
     addi $t0, $t0, 256
     jal make_capsule
+    addi $t9, $zero, 1
     jal full_drop
 
     full_drop_vertical:
@@ -752,6 +754,7 @@ sw $ra, 0($sp)
     jal delete_capsule
     addi $t0, $t0, 256
     jal make_capsule
+    addi $t9, $zero, 1
     jal full_drop
 full_drop_end: 
 # j elimination_check
@@ -768,6 +771,7 @@ sw $ra, 0($sp)
     add $t1, $zero, $s1
     add $t0, $t0, 256
     sw $t1, 0($t0)
+    addi $t9, $zero, 1
 lw $ra, 0($sp)
 addi $sp, $sp, 4
 jr $ra
@@ -781,9 +785,14 @@ sw $ra, 0($sp)
     add $t2, $zero, $s2
     add $t0, $t0, 256
     sw $t2, 0($t0)
+    addi $t9, $zero, 1
 lw $ra, 0($sp)
 addi $sp, $sp, 4
 jr $ra
+
+drop_end:
+jal create_capsule
+j game_loop
 
 # check to see the color of the consecutive pixels have the same color
 # if yes, add 1 to the counter
