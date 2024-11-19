@@ -121,7 +121,7 @@ new_virus:
     li $a1, 30
     syscall # stored at a0
     subi $a0, $a0, 1 # first row inclusive
-    sll $t4, $a0, 128 # times 256, temp stored in $t4
+    sll $t4, $a0, 8 # times 256, temp stored in $t4
     lw $t0, LOWERHALF
     add $t0, $t0, $t4 # vertically moved
     # x-coord of random location
@@ -410,6 +410,44 @@ game_loop:
 
         # j main # Create a new capsule at the top and refresh all capsule-related variables (t0,a3,t1,t2) to the new capsule.
 
+add_capsule_in_array:
+    # addi $sp, $sp, -4
+    # sw $ra, 0($sp)
+    # t7 stores address of current index
+    sll $t7, $s3, 2 # offset = index (s3) * 4
+    add $t7, $t7, $s0 # address = base address (s0) + offset
+    sw $t0, 0($t7) # load head_address
+    sw $t1, 4($t7) # load head_color
+    beq $a3, 1, horizontal_tail
+    beq $a3, 2, vertical_tail
+
+    # lw $ra, 0($sp)
+    # addi $sp, $sp, 4
+    # jr $ra
+    horizontal_tail:
+        # addi $sp, $sp, -4
+        # sw $ra, 0($sp)
+        addi $t5, $t0, 4
+        sw $t5, 8($t7) # load tail_address
+        sw $t2, 12($t7) # load tail_color
+        j add_capsule_in_array_end
+        # lw $ra, 0($sp)
+        # addi $sp, $sp, 4
+        # jr $ra
+    vertical_tail:
+        # addi $sp, $sp, -4
+        # sw $ra, 0($sp)
+        addi $t5, $t0, 256
+        sw $t5, 8($t7) # load tail_address
+        sw $t2, 12($t7) # load tail_color
+        j add_capsule_in_array_end
+        # lw $ra, 0($sp)
+        # addi $sp, $sp, 4
+        # jr $ra
+    add_capsule_in_array_end:
+    addi $s3, $s3, 4 # increase the index by 4
+
+
 # $t5 stores the memory address of current pixel
 # $t6 stores the color of current pixel
 la $s4, Arr
@@ -505,7 +543,7 @@ check_bottom:
 
 addi $t5, $t0, 256
 lw $t6, 0($t5)
-bne $t6, $t1, check_top_end
+bne $t6, $t1, check_bottom_end
 addi $t7, $t7, 1
 sw $t5, 0($s5)
 addi $s5, $s5, 4
@@ -513,7 +551,7 @@ beq $t7, 4, four_found
 
 addi $t5, $t0, 512
 lw $t6, 0($t5)
-bne $t6, $t1, check_top_end
+bne $t6, $t1, check_bottom_end
 addi $t7, $t7, 1
 sw $t5, 0($s5)
 addi $s5, $s5, 4
@@ -521,20 +559,30 @@ beq $t7, 4, four_found
 
 addi $t5, $t0, 768
 lw $t6, 0($t5)
-bne $t6, $t1, check_top_end
+bne $t6, $t1, check_bottom_end
 addi $t7, $t7, 1
 sw $t5, 0($s5)
 addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_bottom_end:
-
+j check_end
 four_found:
-
-
+    lw $t1, BLACK
+    lw $t2, 0($s4)
+    sw $t1, 0($t2)
+    # sw $t1, 0($s4)
+    # sw $t1, 4($s4)
+    # sw $t1, 8($s4)
+    # sw $t1, 12($s4)
 
     # maintain capsule array
+
     # drop
+check_end:
+
+jal create_capsule
+j game_loop
 
 
 drop:
@@ -560,10 +608,10 @@ drop:
         beq $t5, 4, is_horizontal
         beq $t5, 256, is_vertical
         # Now that t0,t1,t2,a3 are initialized
-        full_drop
+        # full_drop
         # Update the capsule info in Array
         sw $t0, 0($t6)
-        proceed_loop
+        # proceed_loop
         is_horizontal:
         addi $sp, $sp, -4
         sw $ra, 0($sp)
@@ -579,7 +627,7 @@ drop:
         addi $sp, $sp, 4
         jr $ra
     half:
-        
+
     wholly_black:
 
 # check to see the color of the consecutive pixels have the same color
@@ -597,38 +645,7 @@ vertical_check:         # check to see if vertical pixels have the same color
 
 
 
-add_capsule_in_array:
-    addi $sp, $sp, -4
-    sw $ra, 0($sp)
-    # t7 stores address of current index
-    sll $t7, $s3, 2 # offset = index (s3) * 4
-    add $t7, $t7, $s0 # address = base address (s0) + offset
-    sw $t0, 0($t7) # load head_address
-    sw $t1, 4($t7) # load head_color
-    beq $a3, 1, horizontal_tail
-    beq $a3, 2, vertical_tail
-    addi $s3, $s3, 4 # increase the index by 4
-    lw $ra, 0($sp)
-    addi $sp, $sp, 4
-    jr $ra
-    horizontal_tail:
-        addi $sp, $sp, -4
-        sw $ra, 0($sp)
-        addi $t5, $t0, 4
-        sw $t5, 8($t7) # load tail_address
-        sw $t2, 12($t7) # load tail_color
-        lw $ra, 0($sp)
-        addi $sp, $sp, 4
-        jr $ra
-    vertical_tail:
-        addi $sp, $sp, -4
-        sw $ra, 0($sp)
-        addi $t5, $t0, 256
-        sw $t5, 8($t7) # load tail_address
-        sw $t2, 12($t7) # load tail_color
-        lw $ra, 0($sp)
-        addi $sp, $sp, 4
-        jr $ra
+
 elimination_check:
     # For each block (2 digits) in the array, if it is checked, pass; 
     # if it is not checked yet, traverse the row in which this block is located (by address, you might need a helper fucntion),
