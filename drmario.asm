@@ -31,19 +31,19 @@ KEY_VAL:
 ##############################################################################
 # Mutable Data
 ##############################################################################
-LEFT:  # (30,1), 0x10008000 + 29 * 4
-    .word 0x10008074
-RIGHT: # (34,1)
-    .word 0x10008088
-MIDDLE:
-    .word 0x1000807c
+LEFT:  # (22,1), 0x10008000 + 21 * 4
+    .word 0x10008054
+RIGHT: # (27,1)
+    .word 0x10008068
+MIDDLE: # (24,1)
+    .word 0x1000805c
 TOPLEFT:   # (1,3), 0x10008000 + 2 * 64 * 4
     .word 0x10008200
-TOPRIGHT:  # (64,3), 0x10008000 + (2 * 64 + 63) * 4
-    .word 0x100082fc
-MIDDLERIGHT: # (34,3)
-    .word 0x1000808f
-BOTTOMLEFT: # (64,1), 0x10008000 + 63 * (64 * 4)
+TOPRIGHT:  # (50,3), 0x10008000 + (2 * 64 + 49) * 4
+    .word 0x100082c4
+MIDDLERIGHT: # (27,3)
+    .word 0x10008070
+BOTTOMLEFT: # (1,64), 0x10008000 + 63 * (64 * 4)
     .word 0x1000bf00
 LOWERHALF: # (1,34), 0x10008000 + 33 * (64 * 4)
     .word 0x1000a100
@@ -59,6 +59,14 @@ Array: # array to store information of capsules
     .space 29856
 Arr: # array to store memory address of colors
     .space 16
+ONE: # (56,1)
+    .word 0x100080dc
+TWO: # (56,3)
+    .word 0x100082dc
+THREE: # (56,5)
+    .word 0x100084dc
+FOUR: # (56,7)
+    .word 0x100086dc
 ##############################################################################
 # Code
 ##############################################################################
@@ -96,17 +104,17 @@ Arr: # array to store memory address of colors
     jal draw_vertical_line
 
     lw $a0, TOPLEFT
-    addi $a1, $zero, 30
+    addi $a1, $zero, 22
     add $t0, $zero, $zero
     jal draw_horizontal_line
 
     addi $a0, $a0, 20
-    addi $a1, $zero, 30
+    addi $a1, $zero, 23
     add $t0, $zero, $zero
     jal draw_horizontal_line
 
     lw $a0, BOTTOMLEFT
-    addi $a1, $zero, 63
+    addi $a1, $zero, 50
     add $t0, $zero, $zero
     jal draw_horizontal_line
 
@@ -127,7 +135,7 @@ new_virus:
     # x-coord of random location
     li $v0, 42
     li $a0, 0
-    li $a1, 62
+    li $a1, 49
     syscall # stored at a0
     addi $a0, $a0, 1
     sll $a0, $a0, 2 # times 4
@@ -214,11 +222,13 @@ determine_color_2:
 create_capsule:
     # $t0 = head address of the capusle
     # $a3 = direction (1 for horizontal and 2 for vertical)
-    lw $t0, MIDDLE
-    addi $a3, $zero, 1
-
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
+    
+    # First in the middle
+    
+    lw $t0, MIDDLE
+    addi $a3, $zero, 1
 
     li $v0, 42 # For randomness
     li $a0, 0 # required random number generator
