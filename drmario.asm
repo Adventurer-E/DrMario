@@ -456,6 +456,10 @@ add $s5, $s4, $zero                 # keeps track of the current memory address
 
 lw $t1, 0($t0)                      # load pixel color of base address
 jal horizontal_check
+# Switch t1 and t2 (and later swtch back)
+add $s1, $zero, $t1
+add $t1, $zero, $t2
+add $t2, $zero, $s1
 beq $a3, 1, horizontal_tail_elim
 beq $a3, 2, vertical_tail_elim
 horizontal_tail_elim:
@@ -465,6 +469,10 @@ vertical_tail_elim:
     addi $t0, $t0, 256
 tail_elim_end:
 jal horizontal_check
+# switch back
+add $s2, $zero, $t1
+add $t1, $zero, $t2
+add $t2, $zero, $s2
 # add $s5, $s4, $zero
 beq $a3, 1, horizontal_tail_elim_restore
 beq $a3, 2, vertical_tail_elim_restore
@@ -485,7 +493,8 @@ addi $sp, $sp, -4
 sw $ra, 0($sp)
 
 check_left:                         # go 3 pixels to the left
-add $t7, $zero, $zero               # counter
+addi $t7, $zero, 1                    # counter
+sw $t0, 0($s5)           
 
 subi $t5, $t0, 4                    # memory address of 1 pixel left
 lw $t6, 0($t5)                      # load pixel color of that memory address
@@ -510,8 +519,7 @@ addi $s5, $s5, 4
 
 check_left_end:
 # go back to base address
-addi $t7, $t7, 1
-sw $t0, 0($s5)
+
 addi $s5, $s5, 4
 beq $t7, 4, four_found              # all 3 pixels to the left have the same color
 
@@ -541,6 +549,10 @@ sw $t5, 0($s5)
 beq $t7, 4, four_found
 
 check_right_end:
+jal erase_arr
+
+addi $t7, $zero, 1                    # counter
+sw $t0, 0($s5) 
 
 check_top:
 subi $t5, $t0, 256
@@ -566,9 +578,10 @@ addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_top_end:
+addi $s5, $s5, 4
+beq $t7, 4, four_found 
 
 check_bottom:
-
 addi $t5, $t0, 256
 lw $t6, 0($t5)
 bne $t6, $t1, check_bottom_end
@@ -594,7 +607,26 @@ addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_bottom_end:
+jal erase_arr
 j check_end
+
+erase_arr:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+    beq $t7, 4, four_found
+    # if 4 is not accumulated horizontally,
+    lw $t7, 0($s4)
+    beq $t7, 0x0, arr_erase_loop_end
+    arr_erase_loop:
+        subi $s5, $s5, 4
+        sw $zero, 0($s5)
+        bne $s5, $s4, arr_erase_loop
+    arr_erase_loop_end:
+        add $t7, $zero, $zero
+    
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
 
 
 four_found:
@@ -607,34 +639,35 @@ four_found:
     sw $t1, 0($t2)
     lw $t2, 12($s4)      # load memory address of index 3 in $t2
     sw $t1, 0($t2)
+    
 
-lw $t2, BLACK
-add $t5, $s0, $zero                                     # initialize $s3 = current memory address of Array
+lw $s2, BLACK
+add $t5, $s0, $zero                                     
 
 arr_loop_start:
-addi $t7, $t5, 4                                        # load color of this memory address
+addi $t7, $t5, 4                                        
 lw $t7, 0($t7)
-beq, $t7, $t2, check_second
+beq, $t7, $s2, check_second
 j arr_inner_loop_start
 check_second:
 addi $t7, $t5, 8
 lw $t7, 0($t7)
-beq $t7, $t2, exit_loop                                # check to see if $t7 is black
+beq $t7, $s2, exit_loop                                # check to see if $t7 is black
 j arr_inner_loop_start
 
 arr_inner_loop_start:
-add $t1, $zero, $zero                                   # inner loop counter
+add $s1, $zero, $zero                                   # inner loop counter
 add $s5, $s4, $zero                                     # initialize $s5 = current memory address of arr
 arr_loop:
 lw $t6, 0($t5)
 lw $t7, 0($s5)
 bne $t6, $t7, address_not_equal                         # check if the memory addresses are equal
-sw $t2, 4($t5)                                          # color stored in the memory address of next element in Arr = black
+sw $s2, 4($t5)                                          # color stored in the memory address of next element in Arr = black
 j arr_loop_end
 address_not_equal:
 addi $s5, $s5, 4                                        # go to the next memory address
-addi $t1, $t1, 1                                        # increment loop counter
-beq $t1, 4, arr_loop_end                                # check to see if we have iterated through the entire array
+addi $s1, $s1, 1                                        # increment loop counter
+beq $s1, 4, arr_loop_end                                # check to see if we have iterated through the entire array
 j arr_loop                                              # if we have reached the end, then continue the loop
 
 arr_loop_end:
@@ -644,6 +677,7 @@ j arr_loop_start
 exit_loop:
 
 check_end:
+jal erase_arr
 lw $ra, 0($sp)
 addi $sp, $sp, 4
 jr $ra
@@ -666,7 +700,6 @@ drop_loop:
     lw $t1, 4($t6)
     lw $t2, 12($t6)
     beq $t9, $zero, drop_end
-    add $t9, $zero, $zero # detector to see if anything changes
     bne $t1, 0x0, half_or_full
     bne $t2, 0x0, half_2 # t1 black, t2 not black
     j wholly_black # both black
@@ -677,6 +710,7 @@ drop_loop:
         sub $t5, $t5, $t0 # check direction
         beq $t5, 4, is_horizontal
         beq $t5, 256, is_vertical
+        judge_direction_end:
         # Now that t0,t1,t2,a3 are initialized
         jal full_drop
         # Update the capsule info in Array
@@ -695,6 +729,7 @@ drop_loop:
         # lw $ra, 0($sp)
         # addi $sp, $sp, 4
         # jr $ra
+        j judge_direction_end
         is_vertical:
         # addi $sp, $sp, -4
         # sw $ra, 0($sp)
@@ -702,6 +737,7 @@ drop_loop:
         # lw $ra, 0($sp)
         # addi $sp, $sp, 4
         # jr $ra
+        j judge_direction_end
     half_1:
         add $t5, $t0, 256 # t5 is now the address of the block under the head
         bne $t5, 0x0, half_1_end
@@ -716,7 +752,8 @@ drop_loop:
     half_2:
         add $t0, $zero, $t5 # $t0 is the TAIL address
         add $t5, $t0, 256 # t5 is now the address of the block under the TAIL
-        bne $t5, 0x0, half_2_end
+        lw $t7, 0($t5)
+        bne $t7, 0x0, half_2_end
         jal one_drop_2
         sw $t0, 8($t6)
         sw $t2, 12($t6)
@@ -738,7 +775,7 @@ drop_loop:
         sw $t9, 8($t6)
         sw $s2, 12($t6)
         add $t6, $t6, 16
-        subi $s3, $s3, 4
+        # subi $s3, $s3, 4
         j drop_loop
 
 full_drop:
@@ -750,11 +787,11 @@ sw $ra, 0($sp)
 
     full_drop_horizontal:
     addi $t5, $t0, 256                      # from base address to memory address of pixel below
-    lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
-    bne $t6, 0x0, full_drop_end                 # check to see if that value is black or not and if it is not black, then go to S_end
+    lw $t7, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+    bne $t7, 0x0, full_drop_end                 # check to see if that value is black or not and if it is not black, then go to S_end
     addi $t5, $t0, 260                      # from base address to memory address of pixel below and 1 unit right
-    lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
-    bne $t6, 0x0, full_drop_end                 # check to see if that value is black or not and if it is not black, then go to S_end
+    lw $t7, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+    bne $t7, 0x0, full_drop_end                 # check to see if that value is black or not and if it is not black, then go to S_end
     # path is clear
     jal delete_capsule
     addi $t0, $t0, 256
@@ -764,8 +801,8 @@ sw $ra, 0($sp)
 
     full_drop_vertical:
     addi $t5, $t0, 512                      # from base address to memory address of pixel 2 rows below
-    lw $t6, 0($t5)                          # fetch its value from memory and store it temporarily in a register
-    bne $t6, 0x0, full_drop_end                     # check to see if that value is black or not and if it is not black, then go to S_end
+    lw $t7, 0($t5)                          # fetch its value from memory and store it temporarily in a register
+    bne $t7, 0x0, full_drop_end                     # check to see if that value is black or not and if it is not black, then go to S_end
     # path is clear
     jal delete_capsule
     addi $t0, $t0, 256
