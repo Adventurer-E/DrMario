@@ -50,7 +50,7 @@ LOWERHALF: # (1,34), 0x10008000 + 33 * (64 * 4)
 RED:
     .word 0xff0000
 BLUE:
-    .word 0x0000ff
+    .word 0x87ceeb
 YELLOW:
     .word 0xffff00
 BLACK:
@@ -344,6 +344,12 @@ game_loop:
         # beq $t5, 0, move_left
         lw $t5, 0($t5)
         bne $t5, 0x0, A_end
+        beq $a3, 1, move_left
+        # if vertical, also check the block to the left-bottom
+        subi $t5, $t0, 4
+        addi $t5, $t5, 256  
+        lw $t5, 0($t5)
+        bne $t5, 0x0, A_end
         move_left:
         jal delete_capsule
         subi $t0, $t0, 4
@@ -357,10 +363,21 @@ game_loop:
     D:
     addi $sp, $sp, -4
     sw $ra, 0($sp)
+        # if horizontal, check right 2 blocks; if vertical check right and right-bottom
+        beq $a3, 2, vertical_D_check
         addi $t5, $t0, 8 # check if the block to the right of the tail is colored
         # beq $t5, 0, move_right
         lw $t5, 0($t5)
         bne $t5, 0x0, D_end
+        j move_right
+        vertical_D_check:
+        addi $t5, $t0, 4
+        lw $t5, 0($t5)
+        bne $t5, 0x0, A_end
+        addi $t5, $t0, 4
+        addi $t5, $t5, 256
+        lw $t5, 0($t5)
+        bne $t5, 0x0, A_end
         move_right:
         jal delete_capsule
         addi $t0, $t0, 4
@@ -620,7 +637,8 @@ sw $ra, 0($sp)
     arr_erase_loop:
         subi $s5, $s5, 4
         sw $zero, 0($s5)
-        bne $s5, $s4, arr_erase_loop
+        sub $t7, $s5, $s4
+        bgtz $t7, arr_erase_loop
     arr_erase_loop_end:
         add $t7, $zero, $zero
     
@@ -717,7 +735,7 @@ drop_loop:
         sw $t0, 0($t6)
         sw $t1, 4($t6)
         sw $t2, 12($t6)
-        addi $t5, $t5, 4
+        jal evaluate_tail_address
         sw $t5, 8($t6)
         # TODO: should recheck this capsule, but I'm afraid the loop will never halt
         addi $t6, $t6, 16
@@ -740,7 +758,8 @@ drop_loop:
         j judge_direction_end
     half_1:
         add $t5, $t0, 256 # t5 is now the address of the block under the head
-        bne $t5, 0x0, half_1_end
+        lw $t7, 0($t5)
+        bne $t7, 0x0, half_1_end
         jal one_drop_1
         sw $t0, 0($t6)
         sw $t1, 4($t6)
@@ -760,9 +779,11 @@ drop_loop:
         # TODO: should recheck this capsule, but I'm afraid the loop will never halt
         j half_2
         half_2_end:
-        addi $t6, $t6, 8
+        addi $t6, $t6, 16
         j drop_loop
     wholly_black:
+        # Store current t6 in s6, and later restore back.
+        add $s6, $zero, $t6
         # Shift all items in the array to the left.
         # the next capsule = (t8, s1, t9, s2)
         addi $t9, $zero, 1
@@ -774,7 +795,33 @@ drop_loop:
         sw $s1, 4($t6)
         sw $t9, 8($t6)
         sw $s2, 12($t6)
-        add $t6, $t6, 16
+        add $t6, $t6, 16 # moved
+        # subi $s3, $s3, 4
+        # if both current colors are black, halt; otherwise, keep moving
+        move_loop:
+            lw $t7, 0($t6)
+            bne $t7, 0x0, move_loop_body
+            j move_loop_end
+            move_loop_body:
+            lw $t8, 16($t6)
+            lw $s1, 20($t6)
+            lw $t9, 24($t6)
+            lw $s2, 28($t6)
+            sw $t8, 0($t6)
+            sw $s1, 4($t6)
+            sw $t9, 8($t6)
+            sw $s2, 12($t6)
+            subi $s3, $s3, 4
+            lw $t7, 0($t6)
+            beq $t7, 0x0, move_loop_end
+            add $t6, $t6, 16 # moved
+            j move_loop
+        move_loop_end:
+        subi $s3, $s3, 4
+        # restore to previous t6
+        add $t6, $zero, $s6
+        lw $s1, 20($t6)
+        lw $s2, 28($t6)
         # subi $s3, $s3, 4
         j drop_loop
 
@@ -847,38 +894,25 @@ drop_end:
 jal create_capsule
 j game_loop
 
-# check to see the color of the consecutive pixels have the same color
-# if yes, add 1 to the counter
 
-# iterate three pixels to the right
+evaluate_tail_address:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+    beq $a3, 1, evaluate_horizontal_tail_address
+    beq $a3, 2, evaluate_vertical_tail_address
+    evaluate_horizontal_tail_address:
+        addi $t5, $t0, 4
+        j evaluate_tail_address_end
+    evaluate_vertical_tail_address:
+        addi $t5, $t0, 256
+    evaluate_tail_address_end:
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
 
-vertical_check:         # check to see if vertical pixels have the same color
-
-
-# from base address to memory address of pixel to left
-# from base address to memory address of pixel to right
-# from base address to memory address of pixel to top
-# from base address to memory address of pixel to bottom
-
-
-
-
-# elimination_check:
-    # For each block (2 digits) in the array, if it is checked, pass; 
-    # if it is not checked yet, traverse the row in which this block is located (by address, you might need a helper fucntion),
-    # traverse all blocks on this row and in the array, count the blocks with the same color while marking them as checked,
-    # when the counter reaches 4, remove every block of this color on this row.
-    # Let the blocks "drop" if necessary.
-
-
-
-    # 2a. Check for collisions
-	# 2b. Update locations (capsules)
-	# 3. Draw the screen
-	# 4. Sleep
     sleep:
     li $v0, 32
-    addi $a0, $zero, 17 # 16.67 milliseconds = 1/60 second
+    addi $a0, $zero, 16 # 16.67 milliseconds = 1/60 second
     syscall
     # 5. Go back to Step 1
     j game_loop
