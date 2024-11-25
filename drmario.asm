@@ -59,6 +59,8 @@ Array: # array to store information of capsules
     .space 29856
 Arr: # array to store memory address of colors
     .space 16
+Preview_Array: # array to store capsules preview
+    .space 32
 ONE: # (56,1)
     .word 0x100080dc
 TWO: # (56,3)
@@ -337,6 +339,48 @@ sw $t2, 1816($t1)
     addi $a1, $zero, 50
     add $t0, $zero, $zero
     jal draw_horizontal_line
+    
+    ############################# Set up preview array ################################
+    la $s5, Preview_Array # s5 will be overwritten, so initialize it every time.
+    # Create a capsule in the middle.
+    lw $t0, MIDDLE
+    jal create_new_capsule
+    lw $t0, ONE
+    jal create_new_capsule
+    lw $t1, 0($t0)
+    lw $t2, 4($t0)
+    sw $t1, 0($s5)
+    sw $t2, 4($s5)
+    addi $s5, $s5, 8
+    lw $t0, TWO
+    jal create_new_capsule
+    lw $t1, 0($t0)
+    lw $t2, 4($t0)
+    sw $t1, 0($s5)
+    sw $t2, 4($s5)
+    addi $s5, $s5, 8
+    lw $t0, THREE
+    jal create_new_capsule
+    lw $t1, 0($t0)
+    lw $t2, 4($t0)
+    sw $t1, 0($s5)
+    sw $t2, 4($s5)
+    addi $s5, $s5, 8
+    lw $t0, FOUR
+    jal create_new_capsule
+    lw $t1, 0($t0)
+    lw $t2, 4($t0)
+    sw $t1, 0($s5)
+    sw $t2, 4($s5)
+    la $s5, Preview_Array
+    
+    # Initialize t0, t1, t2, a3
+    lw $t0, MIDDLE
+    lw $t1, 0($t0)
+    lw $t2, 4($t0)
+    addi $a3, $zero, 1
+    
+    
 
     ############################# Set up viruses ################################
  # Currently, 4 viruses.
@@ -346,7 +390,7 @@ new_virus:
     # y-coord of random location
     li $v0, 42
     li $a0, 0
-    li $a1, 30
+    li $a1, 29
     syscall # stored at a0
     subi $a0, $a0, 1 # first row inclusive
     sll $t4, $a0, 8 # times 256, temp stored in $t4
@@ -377,8 +421,12 @@ virus_end:
 
     ############################# First capsule ################################
 main:
-    jal create_capsule
-
+    # Initialize t0, t1, t2, a3
+    lw $t0, MIDDLE
+    lw $t1, 0($t0)
+    lw $t2, 4($t0)
+    addi $a3, $zero, 1
+    
     j game_loop
 
     #### Delete capsule
@@ -408,6 +456,8 @@ draw_horizontal_line:
     jr $ra
 
 determine_color_1:
+addi $sp, $sp, -4      # Allocate space on the stack
+sw $ra, 0($sp)         # Save $ra onto the stack
     # Map number 0,1,2 to the three colors.
     # $t1 = number 0,1,2
     beq $t1, 0, is_red_1
@@ -415,15 +465,23 @@ determine_color_1:
     beq $t1, 2, is_yellow_1
     is_red_1:
         lw $t1, RED
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
         jr $ra
     is_blue_1:
         lw $t1, BLUE
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
         jr $ra
     is_yellow_1:
         lw $t1, YELLOW
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
         jr $ra
 
 determine_color_2:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
     # Map number 0,1,2 to the three colors.
     # $t2 = number 0,1,2
     beq $t2, 0, is_red_2
@@ -431,23 +489,98 @@ determine_color_2:
     beq $t2, 2, is_yellow_2
     is_red_2:
         lw $t2, RED
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
         jr $ra
     is_blue_2:
         lw $t2, BLUE
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
         jr $ra
     is_yellow_2:
         lw $t2, YELLOW
+        lw $ra, 0($sp)
+        addi $sp, $sp, 4
         jr $ra
 
 create_capsule:
-    # $t0 = head address of the capusle
-    # $a3 = direction (1 for horizontal and 2 for vertical)
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
     
+    la $s5, Preview_Array
     # First in the middle
-    
     lw $t0, MIDDLE
+    lw $t1, 0($s5)
+    lw $t2, 4($s5)
+    sw $t1, 0($t0)
+    sw $t2, 4($t0)
+    addi $a3, $zero, 1
+    # Move the preview array
+    # 2nd -> 1st
+    lw $t1, 8($s5)
+    lw $t2, 12($s5)
+    sw $t1, 0($s5)
+    sw $t2, 4($s5)
+    addi $s5, $s5, 8
+    # 3rd -> 2nd
+    lw $t1, 8($s5)
+    lw $t2, 12($s5)
+    sw $t1, 0($s5)
+    sw $t2, 4($s5)
+    addi $s5, $s5, 8
+    # 4th -> 3rd
+    lw $t1, 8($s5)
+    lw $t2, 12($s5)
+    sw $t1, 0($s5)
+    sw $t2, 4($s5)
+    # 4th still vacant.
+    
+    la $s5, Preview_Array
+    # Paint ONE, TWO, THREE
+    lw $t0, ONE
+    lw $t1, 0($s5)
+    lw $t2, 4($s5)
+    sw $t1, 0($t0)
+    sw $t2, 4($t0)
+    addi $s5, $s5, 8
+    lw $t0, TWO
+    lw $t1, 0($s5)
+    lw $t2, 4($s5)
+    sw $t1, 0($t0)
+    sw $t2, 4($t0)
+    addi $s5, $s5, 8
+    lw $t0, THREE
+    lw $t1, 0($s5)
+    lw $t2, 4($s5)
+    sw $t1, 0($t0)
+    sw $t2, 4($t0)
+    addi $s5, $s5, 8
+    
+    # Create a new capsule at FOUR and later add it to the array.
+    lw $t0, FOUR
+    jal create_new_capsule
+    lw $t1, 0($t0)
+    lw $t2, 4($t0)
+    sw $t1, 0($s5)
+    sw $t2, 4($s5)
+    
+    # Initialize t0, t1, t2, a3
+    lw $t0, MIDDLE
+    lw $t1, 0($t0)
+    lw $t2, 4($t0)
+    addi $a3, $zero, 1
+
+    lw $ra, 0($sp)         # Restore $ra from the stack
+    addi $sp, $sp, 4       # Deallocate stack space
+
+    jr $ra
+
+
+create_new_capsule:
+    # $t0 = head address of the capusle
+    addi $sp, $sp, -4      # Allocate space on the stack
+    sw $ra, 0($sp)         # Save $ra onto the stack
+    
     addi $a3, $zero, 1
 
     li $v0, 42 # For randomness
@@ -535,8 +668,8 @@ game_loop:
     j game_loop
 
     W:
-    addi $sp, $sp, -4
-    sw $ra, 0($sp)
+    # addi $sp, $sp, -4
+    # sw $ra, 0($sp)
         beq $a3, 1, hor_to_ver
         beq $a3, 2, ver_to_hor
         hor_to_ver: # horizontal to vertical
@@ -563,13 +696,14 @@ game_loop:
         add $t1, $zero, $t2
         add $t2, $zero, $t6
         jal make_capsule
-    lw $ra, 0($sp)
-    addi $sp, $sp, 4
-    jr $ra
+    # lw $ra, 0($sp)
+    # addi $sp, $sp, 4
+    # jr $ra
+    j sleep
 
     A:
-    addi $sp, $sp, -4
-    sw $ra, 0($sp)
+    # addi $sp, $sp, -4
+    # sw $ra, 0($sp)
         subi $t5, $t0, 4 # check if the block to the left of the head is colored
         # beq $t5, 0, move_left
         lw $t5, 0($t5)
@@ -586,13 +720,14 @@ game_loop:
         jal make_capsule
         # orientation will be the same
     A_end:
-    lw $ra, 0($sp)
-    addi $sp, $sp, 4
-    jr $ra
+    # lw $ra, 0($sp)
+    # addi $sp, $sp, 4
+    # jr $ra
+    j sleep
 
     D:
-    addi $sp, $sp, -4
-    sw $ra, 0($sp)
+    # addi $sp, $sp, -4
+    # sw $ra, 0($sp)
         # if horizontal, check right 2 blocks; if vertical check right and right-bottom
         beq $a3, 2, vertical_D_check
         addi $t5, $t0, 8 # check if the block to the right of the tail is colored
@@ -613,14 +748,15 @@ game_loop:
         addi $t0, $t0, 4
         jal make_capsule
     D_end:
-    lw $ra, 0($sp)
-    addi $sp, $sp, -4
-    jr $ra
+    # lw $ra, 0($sp)
+    # addi $sp, $sp, -4
+    # jr $ra
+    j sleep
 
     S:
     # $a3 = direction (1 for horizontal and 2 for vertical)
-    addi $sp, $sp, -4
-    sw $ra, 0($sp)
+    # addi $sp, $sp, -4
+    # sw $ra, 0($sp)
         beq $a3, 1, down_horizontal             # check to see aligment is horizontal
         beq $a3, 2, down_vertical               # check to see alignment is vertical
 
@@ -647,9 +783,10 @@ game_loop:
         jal make_capsule
 
     S_end:
-    lw $ra, 0($sp)
-    addi $sp, $sp, 4
-    jr $ra
+    # lw $ra, 0($sp)
+    # addi $sp, $sp, 4
+    # jr $ra
+    j sleep
         # go the memory address of the pixel below the base address
     collision: # Assumption: This is the only possible place to "halt" current capsule and make a new capsule.
         # Eliminate 4-in-a-row, iteratively.
