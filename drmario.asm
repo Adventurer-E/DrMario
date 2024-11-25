@@ -59,8 +59,6 @@ Array: # array to store information of capsules
     .space 29856
 Arr: # array to store memory address of colors
     .space 16
-Preview_Array: # array to store capsules preview
-    .space 32
 ONE: # (56,1)
     .word 0x100080dc
 TWO: # (56,3)
@@ -75,6 +73,10 @@ DRAW_END:
     .word 0x1000bccc
 WHITE:
     .word 0xffffff
+DRAW_MID:
+    .word 0x10008cd0
+Preview_Array: # array to store capsules preview
+    .space 32
 ##############################################################################
 # Code
 ##############################################################################
@@ -87,6 +89,99 @@ WHITE:
     # are in total 3732 blocks available, so the array needs size 3732*2*4=29856.
     la $s0, Array # s0 stores the address of array
     add $s3, $zero, $zero # s3 stores the current index in the array (initialized at 0)
+
+############################# Set up Viruses ################################
+# Main program
+lw $t2, RED
+lw $t1, DRAW_MID
+
+draw_red_virus:
+    sw $t2, 4($t1)
+    sw $t2, 256($t1)
+    sw $t2, 264($t1)        # start of virus body
+    sw $t2, 520($t1)
+    sw $t2, 776($t1)
+    sw $t2, 1024($t1)
+    sw $t2, 1284($t1)
+    sw $t2, 1032($t1)
+    sw $t2, 524($t1)
+    sw $t2, 1036($t1)
+    sw $t2, 1292($t1)
+    sw $t2, 528($t1)
+    sw $t2, 784($t1)
+    sw $t2, 1040($t1)
+    sw $t2, 1296($t1)
+    sw $t2, 532($t1)
+    sw $t2, 1044($t1)
+    sw $t2, 1300($t1)
+    sw $t2, 280($t1)
+    sw $t2, 536($t1)
+    sw $t2, 792($t1)
+    sw $t2, 1048($t1)
+    sw $t2, 1308($t1)
+    sw $t2, 1056($t1)
+    sw $t2, 28($t1)
+    sw $t2, 288($t1)
+
+lw $t2, BLUE
+addi $t1, $t1, 2048
+draw_blue_virus:
+    sw $t2, 4($t1)
+    sw $t2, 256($t1)
+    sw $t2, 264($t1)        # start of virus body
+    sw $t2, 520($t1)
+    sw $t2, 776($t1)
+    sw $t2, 1024($t1)
+    sw $t2, 1284($t1)
+    sw $t2, 1032($t1)
+    sw $t2, 524($t1)
+    sw $t2, 1036($t1)
+    sw $t2, 1292($t1)
+    sw $t2, 528($t1)
+    sw $t2, 784($t1)
+    sw $t2, 1040($t1)
+    sw $t2, 1296($t1)
+    sw $t2, 532($t1)
+    sw $t2, 1044($t1)
+    sw $t2, 1300($t1)
+    sw $t2, 280($t1)
+    sw $t2, 536($t1)
+    sw $t2, 792($t1)
+    sw $t2, 1048($t1)
+    sw $t2, 1308($t1)
+    sw $t2, 1056($t1)
+    sw $t2, 28($t1)
+    sw $t2, 288($t1)
+
+lw $t2, YELLOW
+addi $t1, $t1, 2048
+  draw_yellow_virus:
+    sw $t2, 4($t1)
+    sw $t2, 256($t1)
+    sw $t2, 264($t1)        # start of virus body
+    sw $t2, 520($t1)
+    sw $t2, 776($t1)
+    sw $t2, 1024($t1)
+    sw $t2, 1284($t1)
+    sw $t2, 1032($t1)
+    sw $t2, 524($t1)
+    sw $t2, 1036($t1)
+    sw $t2, 1292($t1)
+    sw $t2, 528($t1)
+    sw $t2, 784($t1)
+    sw $t2, 1040($t1)
+    sw $t2, 1296($t1)
+    sw $t2, 532($t1)
+    sw $t2, 1044($t1)
+    sw $t2, 1300($t1)
+    sw $t2, 280($t1)
+    sw $t2, 536($t1)
+    sw $t2, 792($t1)
+    sw $t2, 1048($t1)
+    sw $t2, 1308($t1)
+    sw $t2, 1056($t1)
+    sw $t2, 28($t1)
+    sw $t2, 288($t1)
 
 ############################# Set up Dr. Mario ################################
 # brown shoes
@@ -302,6 +397,8 @@ li, $t2, 0x1b86f2
 sw $t2, 1560($t1)
 sw $t2, 1816($t1)
 
+
+
     ############################# Set up walls ################################
 
     li $t1, 0x808080  # Store gray in $t1.
@@ -339,8 +436,8 @@ sw $t2, 1816($t1)
     addi $a1, $zero, 50
     add $t0, $zero, $zero
     jal draw_horizontal_line
-    
-    ############################# Set up preview array ################################
+
+############################# Set up preview array ################################
     la $s5, Preview_Array # s5 will be overwritten, so initialize it every time.
     # Create a capsule in the middle.
     lw $t0, MIDDLE
