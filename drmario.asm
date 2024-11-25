@@ -806,12 +806,10 @@ drop_loop:
         sw $t9, 8($t6)
         sw $s2, 12($t6)
         add $t6, $t6, 16 # moved
-        # subi $s3, $s3, 4
         # if both current colors are black, halt; otherwise, keep moving
         move_loop:
             lw $t7, 0($t6)
             bne $t7, 0x0, move_loop_body
-            j move_loop_end
             move_loop_body:
             lw $t8, 16($t6)
             lw $s1, 20($t6)
@@ -821,18 +819,16 @@ drop_loop:
             sw $s1, 4($t6)
             sw $t9, 8($t6)
             sw $s2, 12($t6)
-            subi $s3, $s3, 4
             lw $t7, 0($t6)
             beq $t7, 0x0, move_loop_end
             add $t6, $t6, 16 # moved
             j move_loop
         move_loop_end:
-        subi $s3, $s3, 4
+        # subi $s3, $s3, 4
         # restore to previous t6
         add $t6, $zero, $s6
         lw $s1, 20($t6)
         lw $s2, 28($t6)
-        # subi $s3, $s3, 4
         j drop_loop
 
 full_drop:
