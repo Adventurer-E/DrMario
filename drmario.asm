@@ -90,7 +90,7 @@ Preview_Array: # array to store capsules preview
     la $s0, Array # s0 stores the address of array
     add $s3, $zero, $zero # s3 stores the current index in the array (initialized at 0)
 
-############################# Set up Viruses ################################
+############################# Set up big Viruses ################################
 # Main program
 lw $t2, RED
 lw $t1, DRAW_MID
@@ -1164,6 +1164,16 @@ four_found:
     sw $t1, 0($t2)
     lw $t2, 12($s4)      # load memory address of index 3 in $t2
     sw $t1, 0($t2)
+    addi $sp, $sp, -4
+    sw $a3, 0($sp)
+    li $v0, 31
+    li $a0, 65
+    li $a1, 1000
+    li $a2, 0
+    li $a3, 100
+    syscall
+    lw $a3, 0($sp)
+    addi $sp, $sp, 4
     
 
 lw $s2, BLACK
@@ -1421,6 +1431,16 @@ jr $ra
     j game_loop
 
 Q:
+    addi $sp, $sp, -4
+    sw $a3, 0($sp)
+    li $v0, 31
+    li $a0, 66
+    li $a1, 1000
+    li $a2, 0
+    li $a3, 100
+    syscall
+    lw $a3, 0($sp)
+    addi $sp, $sp, 4
     li $v0, 10 # exit the program gracefully
     syscall
     
