@@ -487,7 +487,7 @@ new_virus:
     # y-coord of random location
     li $v0, 42
     li $a0, 0
-    li $a1, 29
+    li $a1, 30
     syscall # stored at a0
     subi $a0, $a0, 1 # first row inclusive
     sll $t4, $a0, 8 # times 256, temp stored in $t4
@@ -496,7 +496,7 @@ new_virus:
     # x-coord of random location
     li $v0, 42
     li $a0, 0
-    li $a1, 49
+    li $a1, 48
     syscall # stored at a0
     addi $a0, $a0, 1
     sll $a0, $a0, 2 # times 4
@@ -767,6 +767,16 @@ game_loop:
     W:
     # addi $sp, $sp, -4
     # sw $ra, 0($sp)
+    addi $sp, $sp, -4
+    sw $a3, 0($sp)
+    li $v0, 31
+    li $a0, 64
+    li $a1, 1000
+    li $a2, 0
+    li $a3, 100
+    syscall
+    lw $a3, 0($sp)
+    addi $sp, $sp, 4
         beq $a3, 1, hor_to_ver
         beq $a3, 2, ver_to_hor
         hor_to_ver: # horizontal to vertical
@@ -777,9 +787,10 @@ game_loop:
         addi $a3, $zero, 2
         jal make_capsule
         W_end:
-        lw $ra, 0($sp)
-        addi $sp, $sp, 4
-        jr $ra
+        # lw $ra, 0($sp)
+        # addi $sp, $sp, 4
+        # jr $ra
+        j sleep
         ver_to_hor:
         subi $t5, $t0, 4 # check if the block to the left of the head is colored
         lw $t6, 0($t5) # t6 temporarily stores the color to the left of the head
@@ -801,6 +812,18 @@ game_loop:
     A:
     # addi $sp, $sp, -4
     # sw $ra, 0($sp)
+    
+    # Put a3 into stack (because the soundtone will use a3 later) and put back
+    addi $sp, $sp, -4
+    sw $a3, 0($sp)
+    li $v0, 31
+    li $a0, 61
+    li $a1, 1000
+    li $a2, 0
+    li $a3, 100
+    syscall
+    lw $a3, 0($sp)
+    addi $sp, $sp, 4
         subi $t5, $t0, 4 # check if the block to the left of the head is colored
         # beq $t5, 0, move_left
         lw $t5, 0($t5)
@@ -825,6 +848,16 @@ game_loop:
     D:
     # addi $sp, $sp, -4
     # sw $ra, 0($sp)
+    addi $sp, $sp, -4
+    sw $a3, 0($sp)
+    li $v0, 31
+    li $a0, 62
+    li $a1, 1000
+    li $a2, 0
+    li $a3, 100
+    syscall
+    lw $a3, 0($sp)
+    addi $sp, $sp, 4
         # if horizontal, check right 2 blocks; if vertical check right and right-bottom
         beq $a3, 2, vertical_D_check
         addi $t5, $t0, 8 # check if the block to the right of the tail is colored
@@ -854,6 +887,16 @@ game_loop:
     # $a3 = direction (1 for horizontal and 2 for vertical)
     # addi $sp, $sp, -4
     # sw $ra, 0($sp)
+    addi $sp, $sp, -4
+    sw $a3, 0($sp)
+    li $v0, 31
+    li $a0, 63
+    li $a1, 1000
+    li $a2, 0
+    li $a3, 100
+    syscall
+    lw $a3, 0($sp)
+    addi $sp, $sp, 4
         beq $a3, 1, down_horizontal             # check to see aligment is horizontal
         beq $a3, 2, down_vertical               # check to see alignment is vertical
 
