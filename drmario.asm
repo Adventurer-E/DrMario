@@ -1186,7 +1186,7 @@ addi $s5, $s5, 4
 check_left_end:
 # go back to base address
 
-addi $s5, $s5, 4
+# addi $s5, $s5, 4
 beq $t7, 4, four_found              # all 3 pixels to the left have the same color
 
 check_right:
@@ -1212,6 +1212,7 @@ lw $t6, 0($t5)                      # load pixel color that memory address
 bne $t6, $t1, check_right_end       # $t5 = pixel color of 2R, $t6 = pixel color of 3R
 addi $t7, $t7, 1                    # consecutive values = +1 to the counter
 sw $t5, 0($s5)
+addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_right_end:
@@ -1244,7 +1245,7 @@ addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_top_end:
-addi $s5, $s5, 4
+# addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_bottom:
@@ -1468,6 +1469,10 @@ lw $s2, BLACK
 add $t5, $s0, $zero                                     
 
 arr_loop_start:
+# Put s5 into stack
+addi $sp, $sp, -4
+sw $s5, 0($sp)
+
 addi $t7, $t5, 4                                        
 lw $t7, 0($t7)
 beq, $t7, $s2, check_second
@@ -1495,6 +1500,9 @@ j arr_loop                                              # if we have reached the
 
 arr_loop_end:
 addi $t5, $t5, 8 # go to the next memory address in Array
+# Retrieve s5 back from stack
+lw $s5, 0($sp)
+addi $sp, $sp, 4
 j arr_loop_start
 
 exit_loop:
