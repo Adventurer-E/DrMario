@@ -1161,6 +1161,7 @@ sw $ra, 0($sp)
 check_left:                         # go 3 pixels to the left
 addi $t7, $zero, 1                    # counter
 sw $t0, 0($s5)
+addi $s5, $s5, 4
 
 subi $t5, $t0, 4                    # memory address of 1 pixel left
 lw $t6, 0($t5)                      # load pixel color of that memory address
@@ -1186,7 +1187,7 @@ addi $s5, $s5, 4
 check_left_end:
 # go back to base address
 
-addi $s5, $s5, 4
+# addi $s5, $s5, 4
 beq $t7, 4, four_found              # all 3 pixels to the left have the same color
 
 check_right:
@@ -1212,6 +1213,7 @@ lw $t6, 0($t5)                      # load pixel color that memory address
 bne $t6, $t1, check_right_end       # $t5 = pixel color of 2R, $t6 = pixel color of 3R
 addi $t7, $t7, 1                    # consecutive values = +1 to the counter
 sw $t5, 0($s5)
+addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_right_end:
@@ -1219,6 +1221,7 @@ jal erase_arr
 
 addi $t7, $zero, 1                    # counter
 sw $t0, 0($s5)
+add $s5, $s5, 4
 
 check_top:
 subi $t5, $t0, 256
@@ -1244,7 +1247,7 @@ addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_top_end:
-addi $s5, $s5, 4
+# addi $s5, $s5, 4
 beq $t7, 4, four_found
 
 check_bottom:
@@ -1279,7 +1282,7 @@ j check_end
 erase_arr:
 addi $sp, $sp, -4
 sw $ra, 0($sp)
-    beq $t7, 4, four_found
+    # beq $t7, 4, four_found
     # if 4 is not accumulated horizontally,
     lw $t7, 0($s4)
     beq $t7, 0x0, arr_erase_loop_end
@@ -1318,9 +1321,10 @@ four_found:
     li $a2, 0
     li $a3, 100
     syscall
-    jal check_virus_arr # if no viruses left, game over
     lw $a3, 0($sp)
     addi $sp, $sp, 4
+    jal check_virus_arr # if no viruses left, game over
+    
 
 
 # black virus
@@ -1467,7 +1471,12 @@ four_found_end:
 lw $s2, BLACK
 add $t5, $s0, $zero                                     
 
+# Put s5 into stack
+addi $sp, $sp, -4
+sw $s5, 0($sp)
 arr_loop_start:
+
+
 addi $t7, $t5, 4                                        
 lw $t7, 0($t7)
 beq, $t7, $s2, check_second
@@ -1495,10 +1504,13 @@ j arr_loop                                              # if we have reached the
 
 arr_loop_end:
 addi $t5, $t5, 8 # go to the next memory address in Array
+
 j arr_loop_start
 
 exit_loop:
-
+# Retrieve s5 back from stack
+lw $s5, 0($sp)
+addi $sp, $sp, 4
 check_end:
 jal erase_arr
 lw $ra, 0($sp)
