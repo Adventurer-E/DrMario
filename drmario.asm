@@ -683,6 +683,14 @@ create_capsule:
     lw $t1, 0($t0)
     lw $t2, 4($t0)
     addi $a3, $zero, 1
+    
+    # If not possible to move down, game over
+    addi $s1, $t0, 256
+    addi $s2, $t0, 260
+    lw $s1, 0($s1)
+    lw $s2, 0($s2)
+    bne $s1, 0x0, Q
+    bne $s2, 0x0, Q
 
     lw $ra, 0($sp)         # Restore $ra from the stack
     addi $sp, $sp, 4       # Deallocate stack space
