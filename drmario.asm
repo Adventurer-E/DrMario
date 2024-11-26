@@ -59,6 +59,8 @@ Array: # array to store information of capsules
     .space 29856
 Arr: # array to store memory address of colors
     .space 16
+Virus_Arr: # array that stores virus's info
+    .space 32
 ONE: # (56,1)
     .word 0x100080dc
 TWO: # (56,3)
@@ -77,9 +79,6 @@ DRAW_MID:
     .word 0x10008cd0
 Preview_Array: # array to store capsules preview
     .space 32
-# music_notes: .word 76, 79, 72, 74, 76, 79, 72, 74,   # E5, G5, C5, D5...
-              # 77, 81, 74, 76, 77, 81, 74, 76,       # F5, A5, D5, E5...
-              # 79, 83, 76, 77, 79, 83, 76, 77        # G5, B5, E5, F5...
 music_notes: .word 82,83,82,83,81,79,79,81,82,83,81,79,79,79,79,
                     82,83,82,83,81,79,79,81,71,71,72,72,73,73,74,74
 
@@ -488,6 +487,9 @@ sw $t2, 1816($t1)
 
     ############################# Set up viruses ################################
  # Currently, 4 viruses.
+    la $s6, Virus_Arr
+    
+ 
     addi $t2, $zero, 4 # in this section (before making capsules), t2 stores the number of viruses
     add $t3, $zero, $zero # t3 stores current number of visuses (accumulator)
 new_virus:
@@ -517,6 +519,10 @@ new_virus:
     jal determine_color_1
     # paint
     sw $t1, 0($t0)
+    # add virus to array
+    sw $t0, 0($s6)
+    sw $t1, 4($s6)
+    addi $s6, $s6, 8
     # increment
     addi $t3, $t3, 1
     beq $t3, $t2, virus_end
@@ -1210,12 +1216,16 @@ four_found:
     lw $t1, BLACK
     lw $t2, 0($s4)      # load memory address of index 0 in $t2
     sw $t1, 0($t2)      # color that memory address black
+    jal traverse_virus_arr
     lw $t2, 4($s4)      # load memory address of index 1 in $t2
     sw $t1, 0($t2)
+    jal traverse_virus_arr
     lw $t2, 8($s4)      # load memory address of index 2 in $t2
     sw $t1, 0($t2)
+    jal traverse_virus_arr
     lw $t2, 12($s4)      # load memory address of index 3 in $t2
     sw $t1, 0($t2)
+    jal traverse_virus_arr
     addi $sp, $sp, -4
     sw $a3, 0($sp)
     li $v0, 31
@@ -1224,10 +1234,69 @@ four_found:
     li $a2, 0
     li $a3, 100
     syscall
+    jal check_virus_arr # if no viruses left, game over
     lw $a3, 0($sp)
     addi $sp, $sp, 4
     
+    j four_found_end
 
+traverse_virus_arr:
+# t2: current memory to be painted black
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+    la $a1, Virus_Arr # Traverse the virus array
+    lw $a2, 0($a1)
+    bne $t2, $a2, virus_elimination_1_end
+    sw $zero, 0($a1)
+    sw $zero, 4($a1)
+    j virus_elimination_end
+    virus_elimination_1_end:
+    addi $a1, $a1, 8
+    lw $a2, 0($a1)
+    bne $t2, $a2, virus_elimination_2_end
+    sw $zero, 0($a1)
+    sw $zero, 4($a1)
+    j virus_elimination_end
+    virus_elimination_2_end:
+    addi $a1, $a1, 8
+    lw $a2, 0($a1)
+    bne $t2, $a2, virus_elimination_3_end
+    sw $zero, 0($a1)
+    sw $zero, 4($a1)
+    j virus_elimination_end
+    virus_elimination_3_end:
+    addi $a1, $a1, 8
+    lw $a2, 0($a1)
+    bne $t2, $a2, virus_elimination_end
+    sw $zero, 0($a1)
+    sw $zero, 4($a1)
+    virus_elimination_end:
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
+
+check_virus_arr:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
+    la $a1, Virus_Arr
+    lw $a2, 0($a1)
+    bne $a2, 0, check_virus_array_end
+    addi $a1, $a1, 8
+    lw $a2, 0($a1)
+    bne $a2, 0, check_virus_array_end
+    addi $a1, $a1, 8
+    lw $a2, 0($a1)
+    bne $a2, 0, check_virus_array_end
+    addi $a1, $a1, 8
+    lw $a2, 0($a1)
+    bne $a2, 0, check_virus_array_end
+    jal Q
+    check_virus_array_end:
+lw $ra, 0($sp)
+addi $sp, $sp, 4
+jr $ra
+
+four_found_end:
 lw $s2, BLACK
 add $t5, $s0, $zero                                     
 
