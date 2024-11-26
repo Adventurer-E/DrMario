@@ -540,6 +540,8 @@ main:
     # jal delete_capsule
 
  draw_vertical_line:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
     #  $a0 = starting address
     #  $a1 = length of the line
     sw $t1, 0($a0) # Color a0 gray
@@ -548,9 +550,13 @@ main:
     beq $t0, $a1, draw_vertical_line_end # if length numbers painted, break out
     j draw_vertical_line
     draw_vertical_line_end:
+lw $ra, 0($sp)
+addi $sp, $sp, 4
     jr $ra
 
 draw_horizontal_line:
+addi $sp, $sp, -4
+sw $ra, 0($sp)
     #  $a0 = starting address
     #  $a1 = length of the line
     sw $t1, 0($a0) # Color a0 gray
@@ -559,6 +565,8 @@ draw_horizontal_line:
     beq $t0, $a1, draw_horizontal_line_end # if length numbers painted, break out
     j draw_horizontal_line
     draw_horizontal_line_end:
+lw $ra, 0($sp)
+addi $sp, $sp, 4
     jr $ra
 
 determine_color_1:
@@ -1274,6 +1282,7 @@ drop_loop:
     lw $t5, 8($t6)
     lw $t1, 4($t6)
     lw $t2, 12($t6)
+    beq $t0, 0x0, drop_end
     beq $t9, $zero, drop_end
     bne $t1, 0x0, half_or_full
     bne $t2, 0x0, half_2 # t1 black, t2 not black
@@ -1341,9 +1350,11 @@ drop_loop:
     wholly_black:
         # Store current t6 in s6, and later restore back.
         add $s6, $zero, $t6
+        addi $sp, $sp, -4  # store t9 in stack, because it'll be overwritten
+        sw $t9, 0($sp)
         # Shift all items in the array to the left.
         # the next capsule = (t8, s1, t9, s2)
-        addi $t9, $zero, 1
+        
         lw $t8, 16($t6)
         lw $s1, 20($t6)
         lw $t9, 24($t6)
@@ -1366,19 +1377,21 @@ drop_loop:
             sw $s1, 4($t6)
             sw $t9, 8($t6)
             sw $s2, 12($t6)
+            # subi $s3, $s3, 4
             lw $t7, 0($t6)
             beq $t7, 0x0, move_loop_end
             add $t6, $t6, 16 # moved
             j move_loop
         move_loop_end:
-        # subi $s3, $s3, 4
+        subi $s3, $s3, 4
+        # restore t9
+        lw $t9, 0($sp)
+        addi $sp, $sp, 4
         # restore to previous t6
         add $t6, $zero, $s6
         lw $s1, 20($t6)
         lw $s2, 28($t6)
-        # Restore t9 back.
-        lw $t9, 0($sp)
-        addi $s0, $s0, 4
+        
         j drop_loop
 
 full_drop:
@@ -1447,6 +1460,9 @@ addi $sp, $sp, 4
 jr $ra
 
 drop_end:
+# Restore t9 back.
+lw $t9, 0($sp)
+addi $sp, $sp, 4
 jal create_capsule
 j game_loop
 
