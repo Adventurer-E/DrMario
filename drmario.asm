@@ -6,7 +6,7 @@
 #
 # We assert that the code submitted here is entirely our own
 # creation, and will indicate otherwise when it is not.
-#
+#ss
 ######################## Bitmap Display Configuration ########################
 # - Unit width in pixels:       1
 # - Unit height in pixels:      1
@@ -476,20 +476,20 @@ sw $t2, 1816($t1)
     sw $t1, 0($s5)
     sw $t2, 4($s5)
     la $s5, Preview_Array
-    
+
     # Initialize t0, t1, t2, a3
     lw $t0, MIDDLE
     lw $t1, 0($t0)
     lw $t2, 4($t0)
     addi $a3, $zero, 1
-    
-    
+
+
 
     ############################# Set up viruses ################################
  # Currently, 4 viruses.
     la $s6, Virus_Arr
-    
- 
+
+
     addi $t2, $zero, 4 # in this section (before making capsules), t2 stores the number of viruses
     add $t3, $zero, $zero # t3 stores current number of visuses (accumulator)
 new_virus:
@@ -536,7 +536,7 @@ main:
     lw $t1, 0($t0)
     lw $t2, 4($t0)
     addi $a3, $zero, 1
-    
+
     add $s7, $zero, $zero, # s7 is the game loop counter
     add $t9, $zero, $zero # t9 is the counter for music notes
     j game_loop
@@ -626,9 +626,8 @@ sw $ra, 0($sp)
 create_capsule:
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
-    
-    animation:
-b_0:
+
+
 # black virus
 lw $t2, BLACK
 lw $t1, DRAW_MID
@@ -646,7 +645,6 @@ sw $t2, 256($t1)
 sw $t2, 1024($t1)
 sw $t2, 288($t1)
 sw $t2, 1056($t1)
-q_0:
 lw $t2, RED
 lw $t1, DRAW_MID
 subi $t1, $t1, 256
@@ -669,9 +667,8 @@ sw $t2, 32($t1)
 sw $t2, 1792($t1)
 sw $t2, 1824($t1)
 li $v0, 32
-li $a0, 800
+li $a0, 200
 syscall
-b_1:
 lw $t2, BLACK
 lw $t1, DRAW_MID
 subi $t1, $t1, 256
@@ -691,7 +688,6 @@ sw $t2, 0($t1)
 sw $t2, 32($t1)
 sw $t2, 1792($t1)
 sw $t2, 1824($t1)
-q_1:
 lw $t2, RED
 lw $t1, DRAW_MID
 sw $t2, 256($t1)
@@ -711,89 +707,8 @@ sw $t2, 1024($t1)
 sw $t2, 288($t1)
 sw $t2, 1056($t1)
 li $v0, 32
-li $a0, 800
+li $a0, 200
 syscall
-b_2:
-lw $t2, BLACK
-lw $t1, DRAW_MID
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-addi $t1, $t1, 2304
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-addi $t1, $t1, 2304
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-q_2:
-lw $t2, RED
-lw $t1, DRAW_MID
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-lw $t2, BLUE
-addi $t1, $t1, 2560
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-lw $t2, YELLOW
-addi $t1, $t1, 2560
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-li $v0, 32
-li $a0, 800
-syscall
-b_3:
-lw $t2, BLACK
-lw $t1, DRAW_MID
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-addi $t1, $t1, 2560
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-addi $t1, $t1, 2560
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-q_3:
-lw $t2, RED
-lw $t1, DRAW_MID
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-lw $t2, BLUE
-addi $t1, $t1, 2304
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-lw $t2, YELLOW
-addi $t1, $t1, 2304
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
 
     la $s5, Preview_Array
     # First in the middle
@@ -857,7 +772,7 @@ sw $t2, 1056($t1)
     lw $t1, 0($t0)
     lw $t2, 4($t0)
     addi $a3, $zero, 1
-    
+
     # If not possible to move down, game over
     addi $s1, $t0, 256
     addi $s2, $t0, 260
@@ -877,7 +792,7 @@ create_new_capsule:
     # $t0 = head address of the capusle
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
-    
+
     addi $a3, $zero, 1
 
     li $v0, 42 # For randomness
@@ -993,7 +908,7 @@ game_loop:
     W:
     # addi $sp, $sp, -4
     # sw $ra, 0($sp)
-    
+
     addi $sp, $sp, -4
     sw $a3, 0($sp)
     li $v0, 31
@@ -1039,7 +954,7 @@ game_loop:
     A:
     # addi $sp, $sp, -4
     # sw $ra, 0($sp)
-    
+
     # Put a3 into stack (because the soundtone will use a3 later) and put back
     addi $sp, $sp, -4
     sw $a3, 0($sp)
@@ -1058,7 +973,7 @@ game_loop:
         beq $a3, 1, move_left
         # if vertical, also check the block to the left-bottom
         subi $t5, $t0, 4
-        addi $t5, $t5, 256  
+        addi $t5, $t5, 256
         lw $t5, 0($t5)
         bne $t5, 0x0, A_end
         move_left:
@@ -1245,7 +1160,7 @@ sw $ra, 0($sp)
 
 check_left:                         # go 3 pixels to the left
 addi $t7, $zero, 1                    # counter
-sw $t0, 0($s5)           
+sw $t0, 0($s5)
 
 subi $t5, $t0, 4                    # memory address of 1 pixel left
 lw $t6, 0($t5)                      # load pixel color of that memory address
@@ -1303,7 +1218,7 @@ check_right_end:
 jal erase_arr
 
 addi $t7, $zero, 1                    # counter
-sw $t0, 0($s5) 
+sw $t0, 0($s5)
 
 check_top:
 subi $t5, $t0, 256
@@ -1330,7 +1245,7 @@ beq $t7, 4, four_found
 
 check_top_end:
 addi $s5, $s5, 4
-beq $t7, 4, four_found 
+beq $t7, 4, four_found
 
 check_bottom:
 addi $t5, $t0, 256
@@ -1375,7 +1290,7 @@ sw $ra, 0($sp)
         bgtz $t7, arr_erase_loop
     arr_erase_loop_end:
         add $t7, $zero, $zero
-    
+
 lw $ra, 0($sp)
 addi $sp, $sp, 4
 jr $ra
@@ -1406,7 +1321,7 @@ four_found:
     jal check_virus_arr # if no viruses left, game over
     lw $a3, 0($sp)
     addi $sp, $sp, 4
-    
+
 
 # black virus
 lw $t2, BLACK
@@ -1447,7 +1362,7 @@ sw $t2, 32($t1)
 sw $t2, 1792($t1)
 sw $t2, 1824($t1)
 li $v0, 32
-li $a0, 800
+li $a0, 200
 syscall
 lw $t2, BLACK
 lw $t1, DRAW_MID
@@ -1487,85 +1402,8 @@ sw $t2, 1024($t1)
 sw $t2, 288($t1)
 sw $t2, 1056($t1)
 li $v0, 32
-li $a0, 800
+li $a0, 200
 syscall
-lw $t2, BLACK
-lw $t1, DRAW_MID
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-addi $t1, $t1, 2304
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-addi $t1, $t1, 2304
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-lw $t2, RED
-lw $t1, DRAW_MID
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-lw $t2, BLUE
-addi $t1, $t1, 2560
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-lw $t2, YELLOW
-addi $t1, $t1, 2560
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-li $v0, 32
-li $a0, 800
-syscall
-lw $t2, BLACK
-lw $t1, DRAW_MID
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-addi $t1, $t1, 2560
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-addi $t1, $t1, 2560
-subi $t1, $t1, 256
-sw $t2, 0($t1)
-sw $t2, 32($t1)
-sw $t2, 1792($t1)
-sw $t2, 1824($t1)
-lw $t2, RED
-lw $t1, DRAW_MID
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-lw $t2, BLUE
-addi $t1, $t1, 2304
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
-lw $t2, YELLOW
-addi $t1, $t1, 2304
-sw $t2, 256($t1)
-sw $t2, 1024($t1)
-sw $t2, 288($t1)
-sw $t2, 1056($t1)
 
     j four_found_end
 
