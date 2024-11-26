@@ -77,6 +77,13 @@ DRAW_MID:
     .word 0x10008cd0
 Preview_Array: # array to store capsules preview
     .space 32
+# music_notes: .word 76, 79, 72, 74, 76, 79, 72, 74,   # E5, G5, C5, D5...
+              # 77, 81, 74, 76, 77, 81, 74, 76,       # F5, A5, D5, E5...
+              # 79, 83, 76, 77, 79, 83, 76, 77        # G5, B5, E5, F5...
+music_notes: .word 82,83,82,83,81,79,79,81,82,83,81,79,79,79,79,
+                    82,83,82,83,81,79,79,81,71,71,72,72,73,73,74,74
+
+
 ##############################################################################
 # Code
 ##############################################################################
@@ -524,6 +531,8 @@ main:
     lw $t2, 4($t0)
     addi $a3, $zero, 1
     
+    add $s7, $zero, $zero, # s7 is the game loop counter
+    add $t9, $zero, $zero # t9 is the counter for music notes
     j game_loop
 
     #### Delete capsule
@@ -745,9 +754,35 @@ delete_capsule:
     jr $ra
 
 
-
+##############################  Game Loop  #################################
 
 game_loop:
+    # Background music
+    addi $sp, $sp, -4
+    sw $a3, 0($sp)
+    la $t3, music_notes
+    sll $t4, $t9, 2
+    add $t4, $t3, $t4 # t4 is the current location in music_notes
+    li $v0, 31
+    lw $a0, 0($t4)
+    li $a1, 1000
+    li $a2, 0
+    li $a3, 20
+    syscall
+    lw $a3, 0($sp)
+    addi $sp, $sp, 4
+    addi $s7, $s7, 1
+    addi $t4, $zero, 10
+    div $s7, $t4
+    mfhi $t4
+    beq $t4, 0, music_counter_increment
+    j music_counter_increment_end
+    music_counter_increment:
+    addi $t9, $t9, 1
+    addi $t4, $zero, 30
+    div $t9, $t4
+    mfhi $t9
+    music_counter_increment_end:
     # 1a. Check if key has been pressed
     lw $t3, ADDR_KBRD # t3 is the base address for keyboard
     lw $t4, 0($t3) # load value at ADDR_KBRD to t4
@@ -767,6 +802,7 @@ game_loop:
     W:
     # addi $sp, $sp, -4
     # sw $ra, 0($sp)
+    
     addi $sp, $sp, -4
     sw $a3, 0($sp)
     li $v0, 31
@@ -1228,6 +1264,10 @@ drop:
     # If current capsule is full, (recursively) perform S.
     # If it's half, drop the half capsule.
     # If it's wholly black, disregard it: link it to the nex item in Array.
+    
+    # put the previous t9 (music counter) into slack
+    addi $sp, $sp, -4
+    sw $t9, 0($sp)
     addi $t9, $zero, 1 # (initializing) detector to see if anything changes
 drop_loop:
     lw $t0, 0($t6)
@@ -1336,6 +1376,9 @@ drop_loop:
         add $t6, $zero, $s6
         lw $s1, 20($t6)
         lw $s2, 28($t6)
+        # Restore t9 back.
+        lw $t9, 0($sp)
+        addi $s0, $s0, 4
         j drop_loop
 
 full_drop:
