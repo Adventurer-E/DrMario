@@ -1407,6 +1407,166 @@ four_found:
     lw $a3, 0($sp)
     addi $sp, $sp, 4
     
+
+# black virus
+lw $t2, BLACK
+lw $t1, DRAW_MID
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, RED
+lw $t1, DRAW_MID
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, BLUE
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, YELLOW
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+li $v0, 32
+li $a0, 800
+syscall
+lw $t2, BLACK
+lw $t1, DRAW_MID
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, RED
+lw $t1, DRAW_MID
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, BLUE
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, YELLOW
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+li $v0, 32
+li $a0, 800
+syscall
+lw $t2, BLACK
+lw $t1, DRAW_MID
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, RED
+lw $t1, DRAW_MID
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, BLUE
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, YELLOW
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+li $v0, 32
+li $a0, 800
+syscall
+lw $t2, BLACK
+lw $t1, DRAW_MID
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, RED
+lw $t1, DRAW_MID
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, BLUE
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, YELLOW
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+
     j four_found_end
 
 traverse_virus_arr:
