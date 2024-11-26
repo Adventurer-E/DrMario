@@ -621,6 +621,174 @@ create_capsule:
     addi $sp, $sp, -4      # Allocate space on the stack
     sw $ra, 0($sp)         # Save $ra onto the stack
     
+    animation:
+b_0:
+# black virus
+lw $t2, BLACK
+lw $t1, DRAW_MID
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+q_0:
+lw $t2, RED
+lw $t1, DRAW_MID
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, BLUE
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, YELLOW
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+li $v0, 32
+li $a0, 800
+syscall
+b_1:
+lw $t2, BLACK
+lw $t1, DRAW_MID
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+q_1:
+lw $t2, RED
+lw $t1, DRAW_MID
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, BLUE
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, YELLOW
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+li $v0, 32
+li $a0, 800
+syscall
+b_2:
+lw $t2, BLACK
+lw $t1, DRAW_MID
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+q_2:
+lw $t2, RED
+lw $t1, DRAW_MID
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, BLUE
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+lw $t2, YELLOW
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+li $v0, 32
+li $a0, 800
+syscall
+b_3:
+lw $t2, BLACK
+lw $t1, DRAW_MID
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+addi $t1, $t1, 2560
+subi $t1, $t1, 256
+sw $t2, 0($t1)
+sw $t2, 32($t1)
+sw $t2, 1792($t1)
+sw $t2, 1824($t1)
+q_3:
+lw $t2, RED
+lw $t1, DRAW_MID
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, BLUE
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+lw $t2, YELLOW
+addi $t1, $t1, 2304
+sw $t2, 256($t1)
+sw $t2, 1024($t1)
+sw $t2, 288($t1)
+sw $t2, 1056($t1)
+
     la $s5, Preview_Array
     # First in the middle
     lw $t0, MIDDLE
@@ -648,7 +816,7 @@ create_capsule:
     sw $t1, 0($s5)
     sw $t2, 4($s5)
     # 4th still vacant.
-    
+
     la $s5, Preview_Array
     # Paint ONE, TWO, THREE
     lw $t0, ONE
@@ -669,7 +837,7 @@ create_capsule:
     sw $t1, 0($t0)
     sw $t2, 4($t0)
     addi $s5, $s5, 8
-    
+
     # Create a new capsule at FOUR and later add it to the array.
     lw $t0, FOUR
     jal create_new_capsule
@@ -677,12 +845,13 @@ create_capsule:
     lw $t2, 4($t0)
     sw $t1, 0($s5)
     sw $t2, 4($s5)
-    
+
     # Initialize t0, t1, t2, a3
     lw $t0, MIDDLE
     lw $t1, 0($t0)
     lw $t2, 4($t0)
     addi $a3, $zero, 1
+
 
     lw $ra, 0($sp)         # Restore $ra from the stack
     addi $sp, $sp, 4       # Deallocate stack space
